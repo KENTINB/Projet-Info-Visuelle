@@ -17,8 +17,8 @@ public class Game extends PApplet {
 		lights();
 		camera(0, 0, 450, 250, 250, 0, 0, 1, 0);
 		translate(width / 2, height / 2, 0);
-		rotateX(angleX);
-		rotateZ(angleZ);
+		rotateZ(angleX);
+		rotateX(angleZ);
 		box(200, 20, 200);
 	}
 
