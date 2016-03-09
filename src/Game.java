@@ -48,7 +48,8 @@ public class Game extends PApplet {
 
 	public void mouseWheel(MouseEvent event) {
 		float e = event.getCount();
-		if(e > 0) con *= 1.05;
+		//Signe?
+		if(e < 0) con *= 1.05;
 		else con *= 0.95;
 	}
 
