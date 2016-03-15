@@ -7,6 +7,7 @@ public class Game extends PApplet {
 	Plane plane = new Plane(500, 10, 500);
 	PFont f;
 
+
 	public void settings() {
 		size(500, 500, P3D);
 	}
