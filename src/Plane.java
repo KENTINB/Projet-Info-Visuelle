@@ -32,6 +32,10 @@ public class Plane {
         return z;
     }
 
+    public float getCon() {
+        return con;
+    }
+
     public float getAngleX() {
         return angleX;
     }
@@ -50,13 +54,14 @@ public class Plane {
 
         float dZ = (mouseX - pmouseX);
         float dX = (mouseY - pmouseY);
-        if (dX > 1.0) {
+        if (dX < -1) {
             angleX= clamp(angleX+con*PI/24,-PI/3,PI/3);
-        } else if (dX < -1.0) {
+        } else if (dX > 1) {
             angleX= clamp(angleX-con*PI/24,-PI/3,PI/3);
-        } else if (dZ > 1.0) {
+        }
+        if (dZ > 1) {
             angleZ= clamp(angleZ+con*PI/24,-PI/3,PI/3);
-        } else if (dZ < -1.0) {
+        } else if (dZ < -1) {
             angleZ= clamp(angleZ-con*PI/24,-PI/3,PI/3);
 
         }
@@ -65,7 +70,7 @@ public class Plane {
     public void mouseWheel(MouseEvent event) {
         float e = event.getCount();
         //Signe?
-        if(e < 0) con *= 1.05;
-        else con *= 0.95;
+        if(e < 0) con = clamp( con*1.05f, 0.2f,2f);
+        else con = clamp( con*0.95f, 0.2f,2f);
     }
 }
