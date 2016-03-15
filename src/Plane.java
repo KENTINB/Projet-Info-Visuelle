@@ -55,14 +55,14 @@ public class Plane {
         float dZ = (mouseX - pmouseX);
         float dX = (mouseY - pmouseY);
         if (dX < -1) {
-            angleX= clamp(angleX+con*PI/24,-PI/3,PI/3);
+            angleX= clamp(angleX+con*PI/48,-PI/3,PI/3);
         } else if (dX > 1) {
-            angleX= clamp(angleX-con*PI/24,-PI/3,PI/3);
+            angleX= clamp(angleX-con*PI/48,-PI/3,PI/3);
         }
         if (dZ > 1) {
-            angleZ= clamp(angleZ+con*PI/24,-PI/3,PI/3);
+            angleZ= clamp(angleZ+con*PI/48,-PI/3,PI/3);
         } else if (dZ < -1) {
-            angleZ= clamp(angleZ-con*PI/24,-PI/3,PI/3);
+            angleZ= clamp(angleZ-con*PI/48,-PI/3,PI/3);
 
         }
     }
