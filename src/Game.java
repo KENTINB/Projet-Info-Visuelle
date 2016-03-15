@@ -1,13 +1,12 @@
 import processing.core.*;
 import processing.event.MouseEvent;
-import processing.opengl.*;
 
 public class Game extends PApplet {
 
 	Plane plane = new Plane(500, 10, 500);
 	PFont f;
 
-
+	Mover mover;
 	public void settings() {
 		size(500, 500, P3D);
 	}
@@ -15,6 +14,7 @@ public class Game extends PApplet {
 	public void setup() {
 		noStroke();
 		f = createFont("Arial Bold",16,true);
+		mover = new Mover();
 	}
 
 
@@ -31,6 +31,10 @@ public class Game extends PApplet {
 		rotateX(plane.getAngleX());
 		rotateZ(plane.getAngleZ());
 		box(plane.getX(), plane.getY(), plane.getZ());
+
+		mover.update();
+		mover.checkEdges();
+		mover.display();
 
 	}
 
