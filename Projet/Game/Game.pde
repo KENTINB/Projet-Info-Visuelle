@@ -14,13 +14,18 @@ float gravityConstant = 4.0;
 float mu = 0.2;
 float frictionMagnitude = mu * normalForce;
 PFont f;
+PVector location;
+PVector velocity;
 
 //assignement4
+boolean shiftMode = false;
 float cylinderBaseSize = 50;
 float cylinderHeight = 50;
 int cylinderResolution = 40;
 PShape openCylinder = new PShape();
 PShape topnBottom = new PShape();
+ArrayList<PVector> objects;
+
 
 Mover mover;
 public void settings() {
@@ -69,6 +74,31 @@ public void setup() {
 
 
 public void draw() {
+  
+  if(keyCode == 16 && keyPressed){
+   
+    float mousex = mouseX - width/2;
+    float mousey = mouseY - height/2;
+    
+  background(200);
+  directionalLight(126, 126, 126, 0, 0, -1);
+  ambientLight(102, 102, 102);
+  translate(width / 2, height / 2, 0);
+  rotateX(-PI/2);  
+  box(side, thickness, side);
+    translate(location.x,0,location.z);
+    sphere(radius); 
+    translate(-location.x,0,-location.z);
+
+translate(mousex,0,mousey);
+   shape(openCylinder);
+  shape(topnBottom);
+  translate(-mousex,0,-mousey);
+
+  shiftMode = false;
+  
+  }else{
+ 
   background(200);
   directionalLight(126, 126, 126, 0, 0, -1);
   ambientLight(102, 102, 102);
@@ -85,8 +115,7 @@ public void draw() {
   fill(0, 204, 204);
   //
   
-  shape(openCylinder);
-  shape(topnBottom);
+  
 
   //
   box(side, thickness, side);
@@ -94,6 +123,8 @@ public void draw() {
   mover.update();
   mover.checkEdges();
   mover.display();
+  
+  }
 }
 
 public void mouseWheel(MouseEvent event) {
@@ -126,9 +157,11 @@ private float clamp(float x, float min, float max) {
   return x;
 }
 
+
+
+
+
 class Mover {
-  PVector location;
-  PVector velocity;
   Mover() {
     location = new PVector(width/2, height/2);
     velocity = new PVector(1, 0, 1);
@@ -165,5 +198,5 @@ class Mover {
       velocity.z = -velocity.z*elasticCoeff;
       location.z=-side/2 + radius;
     }
-  }
+  } 
 }
