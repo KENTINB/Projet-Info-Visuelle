@@ -1,7 +1,6 @@
-/**added elasticCoeff on square sides //<>//
- *
- */
-float elasticCoeff = 0.9;
+//added elasticCoeff on square sides //<>//
+
+float elasticCoeff = 0.85;
 PVector gravityForce;
 PVector friction;
 float normalForce = 1.0;
@@ -15,6 +14,14 @@ float gravityConstant = 4.0;
 float mu = 0.2;
 float frictionMagnitude = mu * normalForce;
 PFont f;
+
+//assignement4
+float cylinderBaseSize = 50;
+float cylinderHeight = 50;
+int cylinderResolution = 40;
+PShape openCylinder = new PShape();
+PShape topnBottom = new PShape();
+
 Mover mover;
 public void settings() {
   size(200, 200, P3D);
@@ -24,7 +31,41 @@ public void setup() {
   noStroke();
   f = createFont("Arial Bold", 16, true);
   mover = new Mover();
+
+  //assignement4
+  float angle;
+  float[] x = new float[cylinderResolution + 1];
+  float[] z = new float[cylinderResolution + 1];
+
+  //get the x and y position on a circle for all the sides
+  for (int i = 0; i < x.length; i++) {
+    angle = (TWO_PI / cylinderResolution) * i;
+    x[i] = sin(angle) * cylinderBaseSize;
+    z[i] = cos(angle) * cylinderBaseSize;
+  }
+  openCylinder = createShape();
+  topnBottom = createShape();
+  openCylinder.beginShape(QUAD_STRIP);
+  //draw the border of the cylinder
+  for (int i = 0; i < x.length; i++) {
+    openCylinder.vertex(x[i], -(thickness/2), z[i]);
+    openCylinder.vertex(x[i], -(cylinderHeight+thickness/2), z[i]);
+  }
+  openCylinder.endShape(QUAD_STRIP);
+
+  topnBottom.beginShape(TRIANGLES);
+  for (int i = 0; i < x.length; i++) {
+    topnBottom.vertex(0, -(thickness/2), 0);
+    topnBottom.vertex(x[i], -(thickness/2), z[i]);
+    topnBottom.vertex(x[(i+1)%x.length], -(thickness/2), z[(i+1)%x.length]);
+
+    topnBottom.vertex(0, -(cylinderHeight+thickness/2), 0);
+    topnBottom.vertex(x[i], -(cylinderHeight+thickness/2), z[i]);
+    topnBottom.vertex(x[(i+1)%x.length], -(cylinderHeight+thickness/2), z[(i+1)%x.length]);
+  }
+  topnBottom.endShape(TRIANGLES);
 }
+
 
 
 public void draw() {
@@ -42,7 +83,12 @@ public void draw() {
   rotateX(angleX);
   rotateZ(angleZ);
   fill(0, 204, 204);
+  //
+  
+  shape(openCylinder);
+  shape(topnBottom);
 
+  //
   box(side, thickness, side);
 
   mover.update();
@@ -101,22 +147,22 @@ class Mover {
     noStroke();
     strokeWeight(2);
     translate(location.x, -(thickness/2 + radius), location.z);
-    
+
     sphere(radius);
   }
   void checkEdges() {
     if (location.x > side/2.0 -radius) {
-      velocity.x = -velocity.x;
+      velocity.x = -velocity.x*elasticCoeff;
       location.x=side/2 - radius ;
     } else if (location.x < -side/2.0 + radius ) {
-      velocity.x = -velocity.x;
+      velocity.x = -velocity.x*elasticCoeff;
       location.x=-side/2 + radius;
     }
     if (location.z > side/2.0 - radius) {
-      velocity.z = -velocity.z;
+      velocity.z = -velocity.z*elasticCoeff;
       location.z=side/2 - radius;
     } else if (location.z < -side/2.0+ radius) {
-      velocity.z = -velocity.z;
+      velocity.z = -velocity.z*elasticCoeff;
       location.z=-side/2 + radius;
     }
   }
