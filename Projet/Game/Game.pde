@@ -105,19 +105,19 @@ class Mover {
     sphere(radius);
   }
   void checkEdges() {
-    if (location.x > side/2) {
+    if (location.x > side/2.0 -radius) {
       velocity.x = -velocity.x;
-      location.x=side/2;
-    } else if (location.x < -side/2) {
+      location.x=side/2 - radius ;
+    } else if (location.x < -side/2.0 + radius ) {
       velocity.x = -velocity.x;
-      location.x=-side/2;
+      location.x=-side/2 + radius;
     }
-    if (location.z > side/2) {
+    if (location.z > side/2.0 - radius) {
       velocity.z = -velocity.z;
-      location.z=side/2;
-    } else if (location.z < -side/2) {
+      location.z=side/2 - radius;
+    } else if (location.z < -side/2.0+ radius) {
       velocity.z = -velocity.z;
-      location.z=-side/2;
+      location.z=-side/2 + radius;
     }
   }
 }

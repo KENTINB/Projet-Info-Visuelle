@@ -1,7 +1,7 @@
 void settings() {
   size(1000, 1000, P2D);
 }
-float deltaY = 1;
+float delta = 1;
 float angleX = 0;
 float angleY = 0;
 void setup () {
@@ -9,22 +9,22 @@ void setup () {
 void mouseDragged() 
 {
   float temp= (mouseY-pmouseY);
-  if(temp<0)deltaY *= 1.04;
-  else if(temp>0) deltaY *= 0.96;
+  if(temp>1)delta *= 1.2;
+  else if(temp<-1) delta *= 0.8;
 }
 void keyPressed() {
   if(key == CODED){
 if(keyCode==38){
-  angleX+=PI/6;
+  angleX+=PI/24;
 }
 else if(keyCode==40){
-  angleX-=PI/6;
+  angleX-=PI/24;
 }
 else if(keyCode==37){
-angleY-=PI/6;
+angleY-=PI/24;
 }
 else if(keyCode==39){
-angleX+=PI/6;
+angleY+=PI/24;
 }
 }
 }
@@ -33,19 +33,9 @@ void draw() {
   background(255, 255, 255);
   My3DPoint eye = new My3DPoint(0, 0, -5000);
   My3DPoint origin = new My3DPoint(300, 300, 300);
-
   My3DBox input3DBox = new My3DBox(origin, 300, 200, 400);
-  //rotated around x
-  //float[][] transform1 = rotateXMatrix(PI/8);
-  //input3DBox = transformBox(input3DBox, transform1);
-  //projectBox(eye, input3DBox).render();
-  //rotated and translated
-  //float[][] transform2 = translationMatrix(200, 200, 0);
-  //input3DBox = transformBox(input3DBox, transform2);
-  //projectBox(eye, input3DBox).render();
-  //rotated, translated, and scaled
-  //rotateXMatrix(PI/8);
-  input3DBox = transformBox(input3DBox, scaleMatrix(deltaY, deltaY, deltaY));
+  input3DBox = transformBox(input3DBox, scaleMatrix(delta, delta, delta));
+  input3DBox = transformBox(input3DBox, translationMatrix(delta, delta, delta));
   input3DBox = transformBox(input3DBox, rotateXMatrix(angleX));
   input3DBox = transformBox(input3DBox, rotateYMatrix(angleY));
   projectBox(eye, input3DBox).render();
