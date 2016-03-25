@@ -94,7 +94,7 @@
       shape(openCylinder);
       shape(topnBottom);
        
-      if(mousePressed){objects.add(new PVector(mouseX,mouseY));}
+      if(mousePressed && (mousex) < (cylinderBaseSize+side/2) &&  mousex > -cylinderBaseSize-side/2 && mousey > -cylinderBaseSize-side/2 && ((mousey) < (cylinderBaseSize+side/2))){objects.add(new PVector(mouseX,mouseY));}
       
       translate(-mousex,0,-mousey);
       displayCyl();
@@ -108,7 +108,7 @@
     
       textFont(f, 16);
       fill(0);
-      text("angleX: " + angleX + "\nangleZ: " + angleZ+ "\nvitesse:"+ con + "\nvitesse"+velocity, -width/2+60, -height/2+40, 40);    
+      text("angleX: " + angleX + "\nangleZ: " + angleZ+ "\nvitesse:"+ con + "\nvitesse:"+velocity + "\nlocation:"+location, -width/2+60, -height/2+40, 40);    
       rotateX(angleX);
       rotateZ(angleZ);
       fill(0, 204, 204);
@@ -175,7 +175,7 @@
     class Mover {
       Mover() {
         location = new PVector(width/2,0, height/2);
-        velocity = new PVector(1, 0, 1);
+        velocity = new PVector(0, 0, 0);
       }
       void update() {
         gravityForce = new PVector(sin(angleZ)*gravityConstant, 0, -sin(angleX)*gravityConstant);
@@ -211,13 +211,24 @@
       } 
      void checkCylinderCollision(ArrayList<PVector> obj) {
          for(int i = 0; i< obj.size();i++){
-           PVector n = (new PVector(location.x,location.z)).sub(new PVector(obj.get(i).x -width/2,obj.get(i).y-height/2));
-           locaBefore = location;
+           PVector n = (new PVector(location.x,0,location.z)).sub(new PVector(obj.get(i).x -width/2,0,obj.get(i).y-height/2));
            
-           if(sqrt(n.x*n.x+n.y*n.y)< cylinderBaseSize+radius){
+           if(sqrt(n.x*n.x+n.z*n.z)< cylinderBaseSize+radius){
              PVector velocityBefore = new PVector(velocity.x,0,velocity.z);
+             //if(abs(velocityBefore.x) >0.3 && abs(velocityBefore.z) > 0.3){
              velocity = velocityBefore.sub(n.normalize().mult(2.0f*velocityBefore.dot(n.normalize())));
-             location = locaBefore;
+             //}
+             
+             
+             float angle;
+             if(n.z>0 && n.x >0){ angle = PI + atan(n.z/n.x);}
+             else if (n.z>0 && n.x < 0){ angle =  - atan(abs(n.z)/abs(n.x));}
+             else if (n.z<0 && n.x < 0){ angle = atan(abs(n.z)/abs(n.x));}
+             else if (n.z<0 && n.x > 0){ angle = PI -atan(abs(n.z)/abs(n.x));}
+             else angle = 0;
+         
+             
+             location = new PVector((cylinderBaseSize+radius+1)*cos(angle)+obj.get(i).x-width/2,0,(cylinderBaseSize+radius+1)*sin(angle)+obj.get(i).y-height/2);
           }
        }
     }
