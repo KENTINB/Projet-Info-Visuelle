@@ -1,6 +1,7 @@
     //added elasticCoeff on square sides //<>//
-    
     float elasticCoeff = 0.85;
+    
+    //assignement4
     PVector gravityForce;
     PVector friction;
     float normalForce = 1.0;
@@ -16,23 +17,16 @@
     PFont f;
     PVector location;
     PVector velocity;
-    float angle;
-
+    Mover mover;
     
-    //assignement4
+    //assignement5
     float cylinderBaseSize = 50;
     float cylinderHeight = 50;
     int cylinderResolution = 40;
-    float elasticCoeffCyl = 0.85;
     PShape openCylinder = new PShape();
     PShape topnBottom = new PShape();
     ArrayList<PVector> objects = new ArrayList();
-    PVector locaBefore;
     
-           
-
-    
-    Mover mover;
     public void settings() {
       size(200, 200, P3D);
     }
@@ -42,10 +36,11 @@
       f = createFont("Arial Bold", 16, true);
       mover = new Mover();
       
-       //hint(ENABLE_DEPTH_TEST);
+      //enable opacity
+       hint(ENABLE_DEPTH_TEST);
        hint(ENABLE_DEPTH_SORT);
       
-      //assignement4
+      //assignement5: Dzfinition of the cylindre.
       float angle;
       float[] x = new float[cylinderResolution + 1];
       float[] z = new float[cylinderResolution + 1];
@@ -78,10 +73,10 @@
       }
       topnBottom.endShape(TRIANGLES);
     }
-    
-    
-    
+        
     public void draw() {
+      
+      //asignement5: Shift Mode
       if(keyCode == 16 && keyPressed ){
        
         float mousex = mouseX - width/2;
@@ -104,16 +99,13 @@
       shape(openCylinder);
       shape(topnBottom);
       
-      if(objects.isEmpty()){if(mousePressed && (mousex) < (cylinderBaseSize+side/2) &&  mousex > -cylinderBaseSize-side/2 && mousey > -cylinderBaseSize-side/2 && ((mousey) < (cylinderBaseSize+side/2))){objects.add(new PVector(mouseX,mouseY));}
-      }else{
-        for(int i =0 ; i<objects.size();i++){
-        if(mousePressed && dist(objects.get(i).x,objects.get(i).y,mouseX,mouseY)>cylinderBaseSize && (mousex) < (cylinderBaseSize+side/2) &&  mousex > -cylinderBaseSize-side/2 && mousey > -cylinderBaseSize-side/2 && ((mousey) < (cylinderBaseSize+side/2))){objects.add(new PVector(mouseX,mouseY));}}
-      }
+      if(mousePressed && (mousex) < (cylinderBaseSize+side/2) &&  mousex > -cylinderBaseSize-side/2 && mousey > -cylinderBaseSize-side/2 && ((mousey) < (cylinderBaseSize+side/2))){objects.add(new PVector(mouseX,mouseY));}
       popMatrix();
       displayCyl();
       
-      }else{
-     
+      }else{ 
+        
+      //assignement4: Drawing of the plate and the sphere.
       background(200);
       directionalLight(126, 126, 126, 0, 0, -1);
       ambientLight(102, 102, 102);
@@ -121,7 +113,7 @@
     
       textFont(f, 16);
       fill(0);
-      text("angleX: " + angleX + "\nangleZ: " + angleZ+ "\nvitesse:"+ con + "\nvitesse:"+velocity + "\nlocation:"+location+"\nangle:"+angle, -width/2+60, -height/2+40, 40);    
+      text("angleX: " + angleX + "\nangleZ: " + angleZ+ "\nvitesse:"+ con + "\nvitesse:"+velocity + "\nlocation:"+location, -width/2+60, -height/2+40, 40);    
       rotateX(angleX);
       rotateZ(angleZ);
       fill(0, 204, 204);
@@ -137,17 +129,14 @@
       }
     }
     
+    // assignement3: Change the speed of the box.
     public void mouseWheel(MouseEvent event) {
-      
-      
-      float e = event.getCount();
-      //Signe?
-     
+      float e = event.getCount();     
       if (e < 0) con = clamp( con*1.05f, 0.2f, 2f);
       else con = clamp( con*0.95f, 0.2f, 2f);
-        
     }
     
+    // assignement3: Change the orientation of the box.
     public void mouseDragged() {
       float dZ = (mouseX - pmouseX);
       float dX = (mouseY - pmouseY);
@@ -162,6 +151,8 @@
         angleZ= clamp(angleZ-con*PI/48, -PI/3, PI/3);
       }
     }
+    
+    // helper function, that put the value x in the interval min-max.
     private float clamp(float x, float min, float max) {
       if (x>max) {
         return max;
@@ -171,6 +162,7 @@
       return x;
     }
     
+    // Draw every cylinder in the ArraList objects.
     private void displayCyl(){
      for(int i = 0; i<objects.size();i++){
         float positionX= objects.get(i).x - width/2;
@@ -185,12 +177,14 @@
     }
     
     
-    
+    // Class mover to describe the movement of the sphere by keeping track of his location and speed.
     class Mover {
       Mover() {
         location = new PVector(0,0,0);
         velocity = new PVector(0,0,0);
       }
+      
+      // Update the velocity and location according to the gravity and the friction of the box.
       void update() {
         gravityForce = new PVector(sin(angleZ)*gravityConstant, 0, -sin(angleX)*gravityConstant);
         friction = velocity.copy();
@@ -201,12 +195,16 @@
         velocity.add(gravityForce);
         location.add(velocity);
       }
+      
+      // Draw the sphere.
       void display() {
         noStroke();
         strokeWeight(2);
         translate(location.x, -(thickness/2 + radius), location.z);
         sphere(radius);  
     }
+    
+      // Update location and velocity if necessary - the ball hit a edge of the box.
       void checkEdges() {
         if (location.x > side/2.0 -radius) {
           velocity.x = -velocity.x*elasticCoeff;
@@ -223,6 +221,8 @@
           location.z=-side/2 + radius;
         }
       } 
+      
+     // Check for cylinder collision in an ArrayList passed in parameters. 
      void checkCylinderCollision(ArrayList<PVector> obj) {
          for(int i = 0; i< obj.size();i++){
            PVector n = (new PVector(location.x,0,location.z)).sub(new PVector(obj.get(i).x -width/2,0,obj.get(i).y-height/2));
