@@ -162,7 +162,7 @@
       return x;
     }
     
-    // Draw every cylinder in the ArraList objects.
+    // assignement5: Draw every cylinder in the ArraList objects.
     private void displayCyl(){
      for(int i = 0; i<objects.size();i++){
         float positionX= objects.get(i).x - width/2;
@@ -184,7 +184,7 @@
         velocity = new PVector(0,0,0);
       }
       
-      // Update the velocity and location according to the gravity and the friction of the box.
+      // assignement4: Update the velocity and location according to the gravity and the friction of the box.
       void update() {
         gravityForce = new PVector(sin(angleZ)*gravityConstant, 0, -sin(angleX)*gravityConstant);
         friction = velocity.copy();
@@ -196,7 +196,7 @@
         location.add(velocity);
       }
       
-      // Draw the sphere.
+      //assignement4: Draw the sphere.
       void display() {
         noStroke();
         strokeWeight(2);
@@ -204,7 +204,7 @@
         sphere(radius);  
     }
     
-      // Update location and velocity if necessary - the ball hit a edge of the box.
+      // assignement4: Update location and velocity if necessary - the ball hit a edge of the box.
       void checkEdges() {
         if (location.x > side/2.0 -radius) {
           velocity.x = -velocity.x*elasticCoeff;
@@ -222,7 +222,7 @@
         }
       } 
       
-     // Check for cylinder collision in an ArrayList passed in parameters. 
+     // assignement5: Check for cylinder collision in an ArrayList passed in parameters. 
      void checkCylinderCollision(ArrayList<PVector> obj) {
          for(int i = 0; i< obj.size();i++){
            PVector n = (new PVector(location.x,0,location.z)).sub(new PVector(obj.get(i).x -width/2,0,obj.get(i).y-height/2));

@@ -8,7 +8,7 @@ void setup () {
 }
 void mouseDragged() 
 {
-  float temp= (mouseY-pmouseY);
+  float temp= (pmouseY-mouseY);
   if(temp>0.5)delta *= 1.1;
   else if(temp<-0.5) delta *= 0.9;
 }
