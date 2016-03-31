@@ -1,5 +1,5 @@
 void settings() {
-  size(1000, 1000, P2D);
+  size(500, 500, P2D);
 }
 float delta = 1;
 float angleX = 0;
@@ -9,22 +9,22 @@ void setup () {
 void mouseDragged() 
 {
   float temp= (mouseY-pmouseY);
-  if(temp>1)delta *= 1.2;
-  else if(temp<-1) delta *= 0.8;
+  if(temp>0.5)delta *= 1.1;
+  else if(temp<-0.5) delta *= 0.9;
 }
 void keyPressed() {
   if(key == CODED){
 if(keyCode==38){
-  angleX+=PI/24;
+  angleX-=PI/48;
 }
 else if(keyCode==40){
-  angleX-=PI/24;
+  angleX+=PI/48;
 }
 else if(keyCode==37){
-angleY-=PI/24;
+angleY-=PI/48;
 }
 else if(keyCode==39){
-angleY+=PI/24;
+angleY+=PI/48;
 }
 }
 }
@@ -33,9 +33,9 @@ void draw() {
   background(255, 255, 255);
   My3DPoint eye = new My3DPoint(0, 0, -5000);
   My3DPoint origin = new My3DPoint(300, 300, 300);
-  My3DBox input3DBox = new My3DBox(origin, 300, 200, 400);
+  My3DBox input3DBox = new My3DBox(origin, 200, 100, 300);
   input3DBox = transformBox(input3DBox, scaleMatrix(delta, delta, delta));
-  input3DBox = transformBox(input3DBox, translationMatrix(delta, delta, delta));
+  input3DBox = transformBox(input3DBox, translationMatrix(-300*delta+300,-300*delta+300 ,-300*delta+300));
   input3DBox = transformBox(input3DBox, rotateXMatrix(angleX));
   input3DBox = transformBox(input3DBox, rotateYMatrix(angleY));
   projectBox(eye, input3DBox).render();
