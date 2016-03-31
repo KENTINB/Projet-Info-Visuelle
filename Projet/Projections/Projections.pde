@@ -44,6 +44,9 @@ class My3DPoint {
 }
 
 // Method 1, Assignement 2, Part 1 (Step 2)
+/*
+projects a point in 3D in a 2D plan
+*/
 public My2DPoint projectPoint(My3DPoint eye, My3DPoint p) {
   //Complete the code!
   float coeff = eye.z/(eye.z - p.z);
@@ -51,6 +54,9 @@ public My2DPoint projectPoint(My3DPoint eye, My3DPoint p) {
 }
 
 // Method 2, Assignement 2, Part 1 (Step 3)
+/*
+represents a box in 2D
+*/
 class My2DBox {
   My2DPoint[] s;
   My2DBox(My2DPoint[] s) {
@@ -95,6 +101,9 @@ class My3DBox {
 }
 
 // Methode 3, Assignement 2, Part 1 (Step 3)
+/*
+projects a 3D box in 2D plan
+*/
 public My2DBox projectBox (My3DPoint eye, My3DBox box) {
   // Complete the code!
   My2DPoint[] projecteds = new My2DPoint[8];
@@ -110,13 +119,18 @@ public float[] homogeneous3DPoint (My3DPoint p) {
 }
 
 // Method 4-9, Assignement 2, Part 2 (Step 2)
+/*
+rotates the camera around X-axis with angle 'angle'
+*/
 float[][] rotateXMatrix(float angle) {
   return(new float[][] {{1, 0, 0, 0}, 
     {0, cos(angle), sin(angle), 0}, 
     {0, -sin(angle), cos(angle), 0}, 
     {0, 0, 0, 1}});
 }
-
+/*
+rotates the camera around Y-axis with angle 'angle'
+*/
 float[][] rotateYMatrix(float angle) {
   // Complete the code!
   return(new float[][] {{cos(angle), 0, sin(angle), 0}, 
@@ -124,7 +138,9 @@ float[][] rotateYMatrix(float angle) {
     {-sin(angle), 0, cos(angle), 0}, 
     {0, 0, 0, 1}});
 }
-
+/*
+rotates the camera around Z-axis with angle 'angle'
+*/
 float[][] rotateZMatrix(float angle) {
   // Complete the code!
   return(new float[][] {{cos(angle), -sin(angle), 0, 0}, 
@@ -132,7 +148,9 @@ float[][] rotateZMatrix(float angle) {
     {0, 0, 1, 0}, 
     {0, 0, 0, 1}});
 }
-
+/*
+changes box's scale with a coefficient that can differ from one axis to another
+*/
 float[][] scaleMatrix(float x, float y, float z) {
   // Complete the code!
   return(new float[][] {{x, 0, 0, 0}, 
@@ -140,7 +158,9 @@ float[][] scaleMatrix(float x, float y, float z) {
     {0, 0, z, 0}, 
     {0, 0, 0, 1}});
 }
-
+/*
+moves the box following a given vector representer by it's 3 coordinates
+*/
 float[][] translationMatrix(float x, float y, float z) {
   // Complete the code!
   return(new float[][] {{1, 0, 0, x}, 
@@ -150,6 +170,9 @@ float[][] translationMatrix(float x, float y, float z) {
 }
 
 // Method 10, Assignement 2, Part 2 (Step 3)
+/*
+calculates the matricial product of a and b
+*/
 float[] matrixProduct(float[][] a, float[] b) {
   //Complete the code!
   float sum=0;
@@ -164,6 +187,9 @@ float[] matrixProduct(float[][] a, float[] b) {
   return result;
 }
 // Method 11, Assignement 2, Part 2 (Step 3)
+/*
+applies the changes to My3DBox through transformMatrix with the given formula
+*/
 public My3DBox transformBox(My3DBox box, float[][] transformMatrix) {
   //Complete the code! You need to use the euclidian3DPoint() function given below.
   My3DPoint[] result = new My3DPoint[8];
@@ -172,7 +198,9 @@ public My3DBox transformBox(My3DBox box, float[][] transformMatrix) {
   }
   return new My3DBox(result);
 }
-
+/*
+helper methode to transform an array of float into an euclidian 3DPoint
+*/
 My3DPoint euclidian3DPoint (float[] a) {
   My3DPoint result = new My3DPoint(a[0]/a[3], a[1]/a[3], a[2]/a[3]);
   return result;
