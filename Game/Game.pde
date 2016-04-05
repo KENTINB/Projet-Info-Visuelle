@@ -1,4 +1,6 @@
-//added elasticCoeff on square sides //<>//
+import java.util.concurrent.LinkedBlockingQueue; //<>//
+
+//added elasticCoeff on square sides
 float elasticCoeff = 0.85;
 
 //assignement4
@@ -35,12 +37,15 @@ int minimapSide = 135;
 float ratio = minimapSide/side;
 float miniRadius = radius*ratio;
 float miniCylinderSize = cylinderBaseSize*ratio;
+int tailSize = 30;
+LinkedBlockingQueue<PVector> trace = new LinkedBlockingQueue<PVector>(tailSize);
 
 public void settings() {
   size(200, 200, P3D);
 }
 
 public void setup() {
+
   mySurface = createGraphics(4000, 700, P2D);
   minimap = createGraphics(minimapSide, minimapSide, P2D);
   noStroke();
@@ -87,26 +92,45 @@ public void setup() {
 //assignement 6
 void drawMySurface() {
   mySurface.beginDraw();
-  mySurface.background(200);
+  mySurface.background(100, 100);
   mySurface.endDraw();
 }
 
 //assignement 6
-void drawMinimap(){
-minimap.beginDraw();
-pushMatrix();
+void drawMinimap() {
+  minimap.beginDraw();
+  pushMatrix();
 
-minimap.translate(minimapSide/2, minimapSide/2);
+  minimap.translate(minimapSide/2, minimapSide/2);
 
-minimap.background(255, 0, 0, 50);
-if(!objects.isEmpty()){
-fill(0);
-for(PVector o:objects){minimap.ellipse((o.x-width/2)*ratio,(o.y-height/2)*ratio,miniCylinderSize,miniCylinderSize);
-}
+  minimap.background(255, 0, 0, 150);
+  minimap.fill(255);
+  minimap.stroke(10);
+  if (!objects.isEmpty()) {
 
-}
-popMatrix();
-minimap.endDraw();
+    for (PVector o : objects) {
+      minimap.ellipse((o.x-width/2)*ratio, (o.y-height/2)*ratio, miniCylinderSize*2, miniCylinderSize*2);
+    }
+  }
+  if (trace.remainingCapacity()==0) {
+    trace.poll();
+  }
+  try {
+    trace.put(new PVector((location.x)*ratio, (location.z)*ratio));
+  }
+  catch(InterruptedException e) {
+    println("gros foirage");
+  }
+  minimap.fill(200);
+  minimap.ellipse((location.x)*ratio, (location.z)*ratio, miniRadius*2, miniRadius*2);
+  minimap.fill(200, 150);
+  minimap.noStroke();
+  for (PVector p : trace) {
+    minimap.ellipse(p.x, p.y, miniRadius*2, miniRadius*2);
+  }
+
+  popMatrix();
+  minimap.endDraw();
 }
 
 
@@ -169,11 +193,11 @@ void drawMyGame() {
 
 public void draw() {
   drawMyGame();
-  
+
   //assignement 6
   drawMySurface();
   image(mySurface, -width, height/3 );
-  translate(0,0,10);
+  translate(0, 0, 10);
   drawMinimap();
   image(minimap, -width/2 +25, height/3 +10);
 }
