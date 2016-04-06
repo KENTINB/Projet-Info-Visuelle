@@ -96,6 +96,7 @@ class HScrollbar {
     else {
       fill(102, 102, 102);
     }
+    translate(0,0,1);
     rect(sliderPosition, yPosition, barHeight, barHeight);
   }
 

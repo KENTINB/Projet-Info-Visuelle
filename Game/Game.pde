@@ -34,6 +34,7 @@ PGraphics mySurface;
 PGraphics myGame;
 PGraphics minimap;
 PGraphics myScore;
+PGraphics scoreGraph;
 
 int minimapSide = 100;
 int scoreSize = 100;
@@ -47,24 +48,29 @@ float lastScore = 0.0;
 float deltaScore = 1.5;
 HScrollbar hs;
 float positionHUD = height/3;
+float maxScore = 1000000;
+int maxScoreSize = 10;
+ArrayList<Integer> graph = new ArrayList<Integer>();
+float playerMax = 0;
+int counter = 0;
 
 public void settings() {
-  size(200, 200, P3D);
+  size(1700, 1000, P3D);
 }
 
 public void setup() {
-
-  mySurface = createGraphics(4000, 700, P2D);
+  scoreGraph = createGraphics(1400, 100, P2D);
+  mySurface = createGraphics(2000, 700, P2D);
   minimap = createGraphics(minimapSide, minimapSide, P2D);
   myScore= createGraphics(scoreSize, scoreSize, P2D);
-  hs = new HScrollbar(0, 300, 300, 20);
+  hs = new HScrollbar(-150, 460, 300, 20);
   noStroke();
   f = createFont("Arial Bold", 16, true);
   mover = new Mover();
 
   //enable opacity
-   hint(ENABLE_DEPTH_TEST);
-   hint(ENABLE_DEPTH_SORT);
+  hint(ENABLE_DEPTH_TEST);
+  hint(ENABLE_DEPTH_SORT);
 
   //assignement5: Dzfinition of the cylindre.
   float angle;
@@ -102,10 +108,27 @@ public void setup() {
 //assignement 6
 void drawMySurface() {
   mySurface.beginDraw();
-  mySurface.background(100, 100);
+  mySurface.background(230);
   mySurface.endDraw();
 }
-
+//assignement 6
+void drawScoreGraph() {
+  
+  float size = maxScoreSize*hs.getPos();
+  scoreGraph.beginDraw();
+  scoreGraph.background(0, 255, 255);
+  counter++;
+  if(counter >= 30){
+  counter = 0;
+  graph.add(((int)Math.round(totalScore)));
+  playerMax = (totalScore < playerMax)? playerMax : totalScore;
+  }
+  for(int i = 0; i < graph.size(); i++){
+    int y = graph.get(i);
+    scoreGraph.rect(i*size, y, size, -y);
+  }
+  scoreGraph.endDraw();
+}
 //assignement 6
 void drawMinimap() {
   minimap.beginDraw();
@@ -113,11 +136,11 @@ void drawMinimap() {
 
   minimap.translate(minimapSide/2, minimapSide/2);
 
-  minimap.background(255, 0, 0, 150);
-  minimap.fill(255);
+  minimap.background(200, 0, 0);
   minimap.stroke(10);
-  if (!objects.isEmpty()) {
 
+  if (!objects.isEmpty()) {
+    minimap.fill(255, 255, 255);
     for (PVector o : objects) {
       minimap.ellipse((o.x-width/2)*ratio, (o.y-height/2)*ratio, miniCylinderSize*2, miniCylinderSize*2);
     }
@@ -131,9 +154,9 @@ void drawMinimap() {
   catch(InterruptedException e) {
     println("gros foirage");
   }
-  minimap.fill(200);
+  minimap.fill(0, 255, 255);
   minimap.ellipse((location.x)*ratio, (location.z)*ratio, miniRadius*2, miniRadius*2);
-  minimap.fill(200, 150);
+  minimap.fill(0, 255, 255, 150);
   minimap.noStroke();
   for (PVector p : trace) {
     minimap.ellipse(p.x, p.y, miniRadius*2, miniRadius*2);
@@ -154,8 +177,10 @@ void drawScore() {
   myScore.endDraw();
 }
 
-void drawScrollBar(){
-  if(mouseX>positionHUD){ hs.update();}
+void drawScrollBar() {
+  if (mouseX>positionHUD) { 
+    hs.update();
+  }
   hs.display();
 }
 
@@ -190,7 +215,7 @@ void drawMyGame() {
     popMatrix();
     displayCyl();
   } else { 
-    
+
     //assignement4: Drawing of the plate and the sphere.
     background(200);
     directionalLight(126, 126, 126, 0, 0, -1);
@@ -209,8 +234,10 @@ void drawMyGame() {
     box(side, thickness, side);
     fill(0, 204, 204);
 
-        if(mouseY-height/2<positionHUD){mover.update();}
-                            
+    if (mouseY-height/2<positionHUD) {
+      mover.update();
+    }
+
     mover.checkEdges();
     mover.checkCylinderCollision(objects);
     mover.display();
@@ -220,19 +247,19 @@ void drawMyGame() {
 
 
 public void draw() {
-  
-  
-  drawMyGame();
-  drawScrollBar();
   //assignement 6
   positionHUD = height/3;
-  drawMySurface();
-  image(mySurface, -width, positionHUD);
-  translate(0, 0, 10);
+  drawMyGame();
+  drawScrollBar();
+  drawScoreGraph();
+  image(scoreGraph,-width/2 + 75 + minimapSide+scoreSize , positionHUD + 15 );
   drawMinimap();
-  image(minimap, -width/2 +25, positionHUD );
+  image(minimap, -width/2 +25, positionHUD +15);
   drawScore();
-  image(myScore, -width/2+50+minimapSide, positionHUD);
+  image(myScore, -width/2+50+minimapSide, positionHUD+15);
+  translate(0, 0, -2);
+  drawMySurface();
+  image(mySurface, -width/2, positionHUD);
 }
 
 // assignement3: Change the speed of the box.
@@ -246,18 +273,18 @@ public void mouseWheel(MouseEvent event) {
 public void mouseDragged() {
   float dZ = (mouseX - pmouseX);
   float dX = (mouseY - pmouseY);
-  if(mouseY-height/2<positionHUD){
-  if (dX < -1) {
-    angleX= clamp(angleX+con*PI/48, -PI/3, PI/3);
-  } else if (dX > 1) {
-    angleX= clamp(angleX-con*PI/48, -PI/3, PI/3);
+  if (mouseY-height/2<positionHUD) {
+    if (dX < -1) {
+      angleX= clamp(angleX+con*PI/48, -PI/3, PI/3);
+    } else if (dX > 1) {
+      angleX= clamp(angleX-con*PI/48, -PI/3, PI/3);
+    }
+    if (dZ > 1) {
+      angleZ= clamp(angleZ+con*PI/48, -PI/3, PI/3);
+    } else if (dZ < -1) {
+      angleZ= clamp(angleZ-con*PI/48, -PI/3, PI/3);
+    }
   }
-  if (dZ > 1) {
-    angleZ= clamp(angleZ+con*PI/48, -PI/3, PI/3);
-  } else if (dZ < -1) {
-    angleZ= clamp(angleZ-con*PI/48, -PI/3, PI/3);
-  }
-}
 }
 
 // helper function, that put the value x in the interval min-max.
@@ -317,14 +344,14 @@ class Mover {
     if (location.x > side/2.0 -radius) {
       if (abs(location.x - (side/2-radius)) > deltaScore) {
         lastScore = -velocity.mag(); 
-        totalScore -= velocity.mag();
+        totalScore = clamp(totalScore-velocity.mag(), 0, maxScore);
       }
       velocity.x = -velocity.x*elasticCoeff;
       location.x=side/2 - radius ;
     } else if (location.x < -side/2.0 + radius ) {
       if (abs(location.x - (-side/2+radius)) > deltaScore) {
         lastScore = -velocity.mag(); 
-        totalScore -= velocity.mag();
+        totalScore = clamp(totalScore-velocity.mag(), 0, maxScore);
       }
       velocity.x = -velocity.x*elasticCoeff;
       location.x=-side/2 + radius;
@@ -332,14 +359,14 @@ class Mover {
     if (location.z > side/2.0 - radius) {
       if (abs(location.z - (side/2-radius)) > deltaScore) {
         lastScore = -velocity.mag(); 
-        totalScore -= velocity.mag();
+        totalScore = clamp(totalScore-velocity.mag(), 0, maxScore);
       }
       velocity.z = -velocity.z*elasticCoeff;
       location.z=side/2 - radius;
     } else if (location.z < -side/2.0+ radius) {
       if (abs(location.z - (-side/2+radius)) > deltaScore) {
         lastScore = -velocity.mag(); 
-        totalScore -= velocity.mag();
+        totalScore = clamp(totalScore-velocity.mag(), 0, maxScore);
       }
       velocity.z = -velocity.z*elasticCoeff;
       location.z=-side/2 + radius;
@@ -359,7 +386,7 @@ class Mover {
         /*1st Method for the calculation of the location:*/
         float temp = sqrt((n2.z*n2.z)+(n2.x*n2.x));
         location = new PVector(n2.x/temp*(cylinderBaseSize+radius)+obj.get(i).x-width/2, 0, n2.z/temp*(cylinderBaseSize+radius)+obj.get(i).y-height/2);
-        totalScore += velocity.mag();
+        totalScore = clamp(totalScore+velocity.mag(), 0, maxScore);
         lastScore = velocity.mag();
 
         /* 2nd Method for the calculation of the location:
