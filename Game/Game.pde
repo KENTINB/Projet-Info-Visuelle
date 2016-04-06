@@ -1,4 +1,4 @@
-import java.util.concurrent.LinkedBlockingQueue; //<>//
+import java.util.concurrent.LinkedBlockingQueue; //<>// //<>//
 
 //added elasticCoeff on square sides
 float elasticCoeff = 0.85;
@@ -51,15 +51,18 @@ float positionHUD = height/3;
 float maxScore = 1000000;
 int maxScoreSize = 10;
 ArrayList<Integer> graph = new ArrayList<Integer>();
-float playerMax = 0;
+float playerMax = 1;
 int counter = 0;
+int graphWidth =1400;
+int graphHeight = 100;
+float deltaGraph = 5;
 
 public void settings() {
-  size(1700, 1000, P3D);
+  size(200, 200, P3D);
 }
 
 public void setup() {
-  scoreGraph = createGraphics(1400, 100, P2D);
+  scoreGraph = createGraphics(graphWidth, graphHeight, P2D);
   mySurface = createGraphics(2000, 700, P2D);
   minimap = createGraphics(minimapSide, minimapSide, P2D);
   myScore= createGraphics(scoreSize, scoreSize, P2D);
@@ -69,8 +72,8 @@ public void setup() {
   mover = new Mover();
 
   //enable opacity
-  hint(ENABLE_DEPTH_TEST);
-  hint(ENABLE_DEPTH_SORT);
+  //hint(ENABLE_DEPTH_TEST);
+  //hint(ENABLE_DEPTH_SORT);
 
   //assignement5: Dzfinition of the cylindre.
   float angle;
@@ -113,19 +116,20 @@ void drawMySurface() {
 }
 //assignement 6
 void drawScoreGraph() {
-  
   float size = maxScoreSize*hs.getPos();
   scoreGraph.beginDraw();
   scoreGraph.background(0, 255, 255);
   counter++;
-  if(counter >= 30){
-  counter = 0;
-  graph.add(((int)Math.round(totalScore)));
-  playerMax = (totalScore < playerMax)? playerMax : totalScore;
+  if (counter >= 30) {
+    counter = 0;
+    if (mouseY-height/2<positionHUD) { 
+      graph.add(((int)Math.round(totalScore)));
+    }
+    playerMax = (totalScore < playerMax)? playerMax : totalScore;
   }
-  for(int i = 0; i < graph.size(); i++){
+  for (int i = 0; i < graph.size(); i++) {
     int y = graph.get(i);
-    scoreGraph.rect(i*size, y, size, -y);
+    scoreGraph.rect(i*size, graphHeight-(y/playerMax*graphHeight) + deltaGraph, size, y!=0? y/playerMax*graphHeight-deltaGraph : 0);
   }
   scoreGraph.endDraw();
 }
@@ -138,22 +142,19 @@ void drawMinimap() {
 
   minimap.background(200, 0, 0);
   minimap.stroke(10);
-
   if (!objects.isEmpty()) {
     minimap.fill(255, 255, 255);
     for (PVector o : objects) {
       minimap.ellipse((o.x-width/2)*ratio, (o.y-height/2)*ratio, miniCylinderSize*2, miniCylinderSize*2);
     }
   }
-  if (trace.remainingCapacity()==0) {
-    trace.poll();
+  if (mouseY-height/2<positionHUD) {
+
+    if (trace.remainingCapacity()==0) {
+      trace.poll();
+    }
   }
-  try {
-    trace.put(new PVector((location.x)*ratio, (location.z)*ratio));
-  }
-  catch(InterruptedException e) {
-    println("gros foirage");
-  }
+  trace.offer(new PVector((location.x)*ratio, (location.z)*ratio));
   minimap.fill(0, 255, 255);
   minimap.ellipse((location.x)*ratio, (location.z)*ratio, miniRadius*2, miniRadius*2);
   minimap.fill(0, 255, 255, 150);
@@ -161,6 +162,7 @@ void drawMinimap() {
   for (PVector p : trace) {
     minimap.ellipse(p.x, p.y, miniRadius*2, miniRadius*2);
   }
+
 
   popMatrix();
   minimap.endDraw();
@@ -178,7 +180,7 @@ void drawScore() {
 }
 
 void drawScrollBar() {
-  if (mouseX>positionHUD) { 
+  if (mouseY-height/2>positionHUD) { 
     hs.update();
   }
   hs.display();
@@ -252,7 +254,7 @@ public void draw() {
   drawMyGame();
   drawScrollBar();
   drawScoreGraph();
-  image(scoreGraph,-width/2 + 75 + minimapSide+scoreSize , positionHUD + 15 );
+  image(scoreGraph, -width/2 + 75 + minimapSide+scoreSize, positionHUD + 15 );
   drawMinimap();
   image(minimap, -width/2 +25, positionHUD +15);
   drawScore();
