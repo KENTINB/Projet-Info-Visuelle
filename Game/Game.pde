@@ -13,7 +13,7 @@ float con = 1.0;
 float radius = 15.0;
 float thickness = 25.0;
 float side = 400.0;
-float gravityConstant = 2.0;
+float gravityConstant = 2*9.81/frameRate;
 float mu = 0.2;
 float frictionMagnitude = mu * normalForce;
 PFont f;
@@ -22,7 +22,7 @@ PVector velocity;
 Mover mover;
 
 //assignement5
-float cylinderBaseSize = 50;
+float cylinderBaseSize = 40;
 float cylinderHeight = 50;
 int cylinderResolution = 40;
 PShape openCylinder = new PShape();
@@ -55,7 +55,7 @@ float playerMax = 1;
 int counter = 0;
 int graphWidth =1400;
 int graphHeight = 100;
-float deltaGraph = 5;
+float deltaGraph = 0;
 
 public void settings() {
   size(200, 200, P3D);
@@ -72,8 +72,8 @@ public void setup() {
   mover = new Mover();
 
   //enable opacity
-  //hint(ENABLE_DEPTH_TEST);
-  //hint(ENABLE_DEPTH_SORT);
+  hint(ENABLE_DEPTH_TEST);
+  hint(ENABLE_DEPTH_SORT);
 
   //assignement5: Dzfinition of the cylindre.
   float angle;
