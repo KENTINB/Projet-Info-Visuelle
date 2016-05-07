@@ -49,12 +49,12 @@ PImage hough(PImage edgeImg) {
     for (int x = 0; x < edgeImg.width; x++) {
       // Are we on an edge?
       if (brightness(edgeImg.pixels[y * edgeImg.width + x]) != 0) {
-        for (float phi = 0.0; phi < Math.PI; phi += discretizationStepsPhi) {
-          float r = (x*cos(phi)+y*sin(phi));
-          if(r<0){
-          r += (rDim-1)/2;
+        for (int phi = 0; phi < phiDim; phi ++) {
+          float r = x*cos(phi*discretizationStepsPhi)+y*sin(phi*discretizationStepsPhi);
+          if(r < 0.0){
+          r += (rDim-1)/2f;
           }   
-              accumulator[(int)(phi/discretizationStepsPhi * (rDim) + r)] += 1;
+              accumulator[(int)Math.round(phi * (rDim + 2) + r)] += 1;
         }
         
         // ...determine here all the lines (r, phi) passing through
