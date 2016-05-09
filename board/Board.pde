@@ -5,7 +5,7 @@ HScrollbar thresholdBar2;
 int sizeKernel = 3;
 float[][] kernel = { { 0, -1, 0 }, { 12, 15, 12 }, { 0, -1, 0 }};
 float weight = 15.f;
-
+int thresholdVote = 150;
 
 
 void settings() {
@@ -27,11 +27,14 @@ void draw() {
   //image(filterThreshold(img,255*thresholdBar.getPos()), 0, 20);
   //image(displayHue(img,thresholdBar1.getPos()*255,thresholdBar2.getPos()*255),0,40);
   //image(convolute(img), 0, 0);
-  image(hough(sobel(img)),0,0);
+  image(img, 0, 0);  
+  hough(sobel(img));
+  //image(sobel(img),0,0);
+  //image(hough(sobel(img)),0,0);
 }
 
 //Assignement 9
-PImage hough(PImage edgeImg) {
+void hough(PImage edgeImg) {
   float discretizationStepsPhi = 0.06f;
   float discretizationStepsR = 2.5f;
   // dimensions of the accumulator
@@ -39,48 +42,93 @@ PImage hough(PImage edgeImg) {
   int rDim = (int) (((edgeImg.width + edgeImg.height) * 2 + 1) / discretizationStepsR);
   // our accumulator (with a 1 pix margin around)
   int[] accumulator = new int[(phiDim + 2) * (rDim + 2)];
-  for(int i = 0; i< accumulator.length;i++){
-  accumulator[i] = 0;
-  }
+  int halfRAxisSize = rDim >>> 1;
+  int maxRadius = (int)Math.ceil(Math.hypot(width, height));
+
   // Fill the accumulator: on edge points (ie, white pixels of the edge
   // image), store all possible (r, phi) pairs describing lines going
   // through the point.
-  for (int y = 0; y < edgeImg.height; y++) {
-    for (int x = 0; x < edgeImg.width; x++) {
+  double[] sinTable = new double[phiDim];
+  double[] cosTable = new double[phiDim];
+  for (int theta = phiDim - 1; theta >= 0; theta--)
+  {
+    double thetaRadians = theta * Math.PI / phiDim;
+    sinTable[theta] = Math.sin(thetaRadians);
+    cosTable[theta] = Math.cos(thetaRadians);
+  }
+
+  for (int y = 0; y < edgeImg.height-1; y++) {
+    for (int x = 0; x < edgeImg.width-1; x++) {
       // Are we on an edge?
       if (brightness(edgeImg.pixels[y * edgeImg.width + x]) != 0) {
-        for (float phi = 0.0; phi < Math.PI; phi += discretizationStepsPhi) {
-          float r = (x*cos(phi)+y*sin(phi));
-          if(r<0){
-          r += (rDim-1)/2;
-          }   
-              accumulator[(int)(phi/discretizationStepsPhi * (rDim) + r)] += 1;
+        for (int theta = phiDim - 1; theta >= 0; theta--)
+        {
+          double r = cosTable[theta] * x + sinTable[theta] * y;
+          int rScaled = (int)Math.round(r * halfRAxisSize / maxRadius) + halfRAxisSize;
+          accumulator[theta*rDim + rScaled] += 1 ;
         }
-        
+
         // ...determine here all the lines (r, phi) passing through
         // pixel (x,y), convert (r,phi) to coordinates in the
         // accumulator, and increment accordingly the accumulator.
         // Be careful: r may be negative, so you may want to center onto
         // the accumulator with something like: r += (rDim - 1) / 2
       }
-      
     }
-    
   }
   /*
-  for(int i = 0; i< accumulator.length;i++){
-  println(accumulator[i]+", ");
-  }
-  */
-  PImage houghImg = createImage(rDim + 2, phiDim + 2, ALPHA);
-  for (int i = 0; i < accumulator.length; i++) {
-    houghImg.pixels[i] = color(min(255, accumulator[i]));
-  }
-  // You may want to resize the accumulator to make it easier to see:
+   
+   PImage houghImg = createImage(rDim + 2, phiDim + 2, ALPHA);
+   for (int i = 0; i < accumulator.length; i++) {
+   houghImg.pixels[i] = color(min(255, accumulator[i]));
+   }
+   // You may want to resize the accumulator to make it easier to see:
    houghImg.resize(400, 400);
-  houghImg.updatePixels();
-  return houghImg;
+   houghImg.updatePixels();
+   // return houghImg;
+   */
+
+  for (int idx = 0; idx < accumulator.length; idx++) {
+    if (accumulator[idx] > thresholdVote) {
+      float phi = (float) (Math.round(idx/rDim) * Math.PI / phiDim);
+      float r = ((idx % rDim)-halfRAxisSize)*maxRadius/halfRAxisSize ;
+
+      // Cartesian equation of a line: y = ax + b
+      // in polar, y = (-cos(phi)/sin(phi))x + (r/sin(phi))
+      // => y = 0 : x = r / cos(phi)
+      // => x = 0 : y = r / sin(phi)
+      // compute the intersection of this line with the 4 borders of
+      // the image
+      int x0 = 0;
+      int y0 = (int) (r / sin(phi));
+      int x1 = (int) (r / cos(phi));
+      int y1 = 0;
+      int x2 = edgeImg.width;
+      int y2 = (int) (-cos(phi) / sin(phi) * x2 + r / sin(phi));
+      int y3 = edgeImg.width;
+      int x3 = (int) (-(y3 - r / sin(phi)) * (sin(phi) / cos(phi)));
+      // Finally, plot the lines
+      stroke(204, 102, 0);
+      if (y0 > 0) {
+        if (x1 > 0)
+          line(x0, y0, x1, y1);
+        else if (y2 > 0)
+          line(x0, y0, x2, y2);
+        else
+          line(x0, y0, x3, y3);
+      } else {
+        if (x1 > 0) {
+          if (y2 > 0)
+            line(x1, y1, x2, y2);
+          else
+            line(x1, y1, x3, y3);
+        } else
+          line(x2, y2, x3, y3);
+      }
+    }
+  }
 }
+
 
 PImage filterThreshold(PImage img, float threshold) {
   PImage result = createImage(width, height, RGB);
@@ -174,6 +222,16 @@ PImage sobel(PImage img) {
   float[][] vKernel = { { 0, 0, 0  }, 
     { 1, 0, -1 }, 
     { 0, 0, 0  } };
+    
+     float[][] vKernel2 = { 
+    { -1, 0, 1  }, 
+    { -2, 0, 2 }, 
+    { -1, 0, 1 } };
+  float[][] hKernel2 = { 
+    { -1, -2, -1  }, 
+    { 0, 0, 0 }, 
+    { 1, 2, 1  } };
+    
   PImage result = createImage(img.width, img.height, ALPHA);
   // clear the image
   for (int i = 0; i < img.width * img.height; i++) {
@@ -191,17 +249,26 @@ PImage sobel(PImage img) {
     // Skip top and bottom edges
     for (int x = 2; x < img.width - 2; x++) {
       // Skip left and right
-      sumh += hKernel[2][1]*color(getPos(img, x+1, y));
-      sumh += hKernel[0][1]*color(getPos(img, x-1, y));
-      sumv += vKernel[1][2]*color(getPos(img, x, y+1));
-      sumv += vKernel[1][0]*color(getPos(img, x, y-1));
-      float sum=sqrt(pow(sumh, 2) + pow(sumv, 2));
-      if (max<sum) {
-        max = sum;
-      }
-      sumv =0; 
-      sumh =0;
-      buffer[x+y*img.width] = sum;
+      
+       /*sumh += hKernel[2][1]*color(getPos(img, x+1, y));
+       sumh += hKernel[0][1]*color(getPos(img, x-1, y));
+       
+       sumv += vKernel[1][2]*color(getPos(img, x, y+1));
+       sumv += vKernel[1][0]*color(getPos(img, x, y-1));
+       */
+       
+       sumh = multMatrice(hKernel2,img,3,x,y);
+       sumv = multMatrice(vKernel2,img,3,x,y);
+       
+       float sum=sqrt(pow(sumh, 2) + pow(sumv, 2));
+       if (max<sum) {
+       max = sum;
+       }
+       sumv =0; 
+       sumh =0;
+       buffer[x+y*img.width] = sum;
+       
+       
     }
   }
 
@@ -218,4 +285,14 @@ PImage sobel(PImage img) {
     }
   }
   return result;
+}
+
+int multMatrice(float[][] kernel ,  PImage img, int kernelSize, int x, int y){
+  int sum = 0;
+  for(int i = 0; i<kernelSize;i++){
+    for(int j = 0;j<kernelSize; j++){
+        sum += kernel[i][j]*color(getPos(img, x+i-1, y+j-1));
+    }
+  }
+  return sum;
 }
