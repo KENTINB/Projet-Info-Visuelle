@@ -8,8 +8,8 @@ int max = 0xFFFFFF;
 HScrollbar thresholdBar1;
 HScrollbar thresholdBar2;
 int sizeKernel = 3;
-float[][] kernel = { { 0, -1, 0 }, { 12, 15, 12 }, { 0, -1, 0 }};
-float weight = 15.f;
+float[][] kernel = { { 0.000039, 0.006133/*-1*/, 0.000039 }, { 0.006133, 0.975316, 0.006133 }, { 0.000039, 0.006133/*-1*/, 0.000039 }};
+float weight = 13.f;
 int thresholdAcc = 150;
 
 // size of the region we search for a local maximum
@@ -59,9 +59,10 @@ void draw() {
   if (cam.available() == true) {
     cam.read();
   }
-  img = cam.get();
+  //img = cam.get();
+  img = displayHue(cam.get(), 54, 111);//filterThreshold(convolute(filterThreshold(displayHue(cam.get(),100,120),100)),50);
   image(img, 0, 0);
-  getIntersections(hough(sobel(displayHue(img, 60, 140)), 50));
+  //getIntersections(hough(filterThreshold(convolute(sobel(displayHue(img, 100, 140))),200), 10));
 }
 
 //Assignement 9
@@ -190,10 +191,10 @@ ArrayList<PVector> hough(PImage edgeImg, int nLines) {
 }
 
 ArrayList<PVector> getIntersections(ArrayList<PVector> lines) {
-  
+
   ArrayList<PVector> intersections = new ArrayList<PVector>();
   PVector vec1, vec2;
-  float x,y,d,phi1,phi2,r1,r2;
+  float x, y, d, phi1, phi2, r1, r2;
   for (int i = 0; i < lines.size() - 1; i++) {
     vec1 = lines.get(i);
     r1 = vec1.x;
@@ -229,6 +230,19 @@ PImage filterThreshold(PImage img, float threshold) {
   return result;
 }
 
+PImage filterBiggerThreshold(PImage img, float threshold) {
+  PImage result = createImage(width, height, RGB);
+  // create a new, initially transparent, 'result' image
+  for (int i = 0; i < img.width * img.height; i++) {
+    // do something with the pixel img.pixels[i]
+    if (brightness(img.pixels[i]) > threshold) {
+      result.pixels[i] = 0;
+    }else{
+    result.pixels[i] = img.pixels[i];
+    }
+  }
+  return result;
+}
 PImage filterThresholdInverted(PImage img, float threshold) {
   PImage result = createImage(width, height, RGB);
   // create a new, initially transparent, 'result' image
@@ -336,8 +350,8 @@ PImage sobel(PImage img) {
        sumv += vKernel[1][2]*color(getPos(img, x, y+1));
        sumv += vKernel[1][0]*color(getPos(img, x, y-1));
        */
-      sumh = multMatrice(img, hKernel2, x, y, 3);
-      sumv = multMatrice(img, vKernel2, x, y, 3);
+      sumh = multMatrice(img, hKernel, x, y, 3);
+      sumv = multMatrice(img, vKernel, x, y, 3);
 
       float sum=sqrt(pow(sumh, 2) + pow(sumv, 2));
       if (max<sum) {
@@ -363,7 +377,18 @@ PImage sobel(PImage img) {
   }
   return result;
 }
-
+//additional filter
+PImage areaFilter(PImage img, float threshold) {
+  PImage res = img;
+  for (int i = 1; i< img.height*img.width -1; i++) {
+    if(img.pixels[i-1]>threshold && img.pixels[i]>threshold &&img.pixels[i+1]>threshold){
+    res.pixels[i] = max;
+    }else{
+    res.pixels[i] = 0;
+    }
+  }
+  return img;
+}
 int multMatrice(PImage img, float kernel[][], int x, int y, int kernelSize) {
   int sum = 0;
   for (int i =0; i<kernelSize; i++) {
