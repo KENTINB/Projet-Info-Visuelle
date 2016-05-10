@@ -7,7 +7,6 @@ float[][] kernel = { { 0, -1, 0 }, { 12, 15, 12 }, { 0, -1, 0 }};
 float weight = 15.f;
 int thresholdVote = 150;
 
-
 void settings() {
   size(800, 600);
 }
