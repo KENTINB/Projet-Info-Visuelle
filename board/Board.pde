@@ -32,7 +32,7 @@ void settings() {
   size(2000, 400);
 }
 void setup() {
-  img = loadImage("board2.jpg");
+  img = loadImage("board4.jpg");
   noLoop();
   // no interactive behaviour: draw() will be called only once.
   thresholdBar1 = new HScrollbar(0, 0, 800, 20);
@@ -65,13 +65,14 @@ void draw() {
    */
 
   img.resize(500, 400);
-  PImage conv = sobel(((intensityThreshold(convolute(displayHSV(img, minHUE, maxHUE, minS, maxS, minB, maxB)), 15))));
+  PImage conv = sobel(((intensityThreshold(convolute(displayHSV(img, minHUE, maxHUE, minS, maxS, minB, maxB)), 10))));
   conv.resize(500, 400);
 
-  int acc[] = getAccumulator(conv);
+  
+  
   image(img, 0, 0);
-  ArrayList<PVector> lines = hough(conv, acc, 9);
-
+  int acc[] = getAccumulator(conv);
+  ArrayList<PVector> lines = hough(conv, acc, 4);
   //graph.build(lines, img.width, img.height);
   //List<int[]> quads = graph.findCycles();
   getIntersections(lines);
@@ -191,16 +192,12 @@ ArrayList<PVector> hough(PImage edgeImg, int accumulator[], int nLines) {
 
   ArrayList<PVector> res = new ArrayList<PVector>();
   ArrayList<Integer> bestCandidates = new ArrayList();
+
   int phiDim = (int) (Math.PI / discretizationStepsPhi);
   int rDim = (int) (((edgeImg.width + edgeImg.height) * 2 + 1) / discretizationStepsR);
-  int halfRAxisSize = rDim >>> 1;
+  int halfRAxisSize = rDim/2 /*>>> 1*/;
   int maxRadius = (int)Math.ceil(Math.hypot(width, height));
 
-  for (int i = 0; i<accumulator.length; i++) {
-    if (accumulator[i]>minVotes) {
-      bestCandidates.add(i);
-    }
-  }
 
   //////////////////////
   for (int accR = 0; accR < rDim; accR++) {
@@ -242,7 +239,7 @@ ArrayList<PVector> hough(PImage edgeImg, int accumulator[], int nLines) {
 
   for (int idx = 0; idx < Math.min(nLines, bestCandidates.size()); idx++) {
 
-    float phi = (float) (Math.round(bestCandidates.get(idx)/rDim) * Math.PI / phiDim);
+    float phi = (float) (Math.round(bestCandidates.get(idx)/rDim) * discretizationStepsPhi/*Math.PI / phiDim*/);
 
     float r = ((bestCandidates.get(idx) % rDim)-halfRAxisSize)*maxRadius/halfRAxisSize ;
     res.add(new PVector(r, phi));

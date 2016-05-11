@@ -223,8 +223,8 @@ class QuadGraph {
     float i3=v43.cross(v14).z;
     float i4=v14.cross(v21).z;
 
-    if (   (i1>0 && i2>0 && i3>0 && i4>0) 
-      || (i1<0 && i2<0 && i3<0 && i4<0))
+    if ((i1 > 0 && i2>0 && i3>0 && i4>0) 
+      ||(i1<0 && i2<0 && i3<0 && i4<0))
       return true;
     else 
     System.out.println("Eliminating non-convex quad");
