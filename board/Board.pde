@@ -1,16 +1,26 @@
 import processing.video.*;
 import java.util.Collections;
+import java.util.Random;
 
-Capture cam;
+//Capture cam;
 
 PImage img;
 int max = 0xFFFFFF;
 HScrollbar thresholdBar1;
 HScrollbar thresholdBar2;
+QuadGraph graph;
 int sizeKernel = 3;
-float[][] kernel = { { 0.000039, 0.006133/*-1*/, 0.000039 }, { 0.006133, 0.975316, 0.006133 }, { 0.000039, 0.006133/*-1*/, 0.000039 }};
-float weight = 13.f;
+float[][] kernel = { { 1, 2/*-1*/, 1}, { 2, 4, 2 }, { 1, 2/*-1*/, 1}};
+float weight = 16.f;
 int thresholdAcc = 150;
+float minHUE = 50;
+float maxHUE = 135;
+float minS = 75;
+float maxS = 255;
+float minB = 30;
+float maxB = 216;
+float discretizationStepsPhi = 0.06f;
+float discretizationStepsR = 2.5f;
 
 // size of the region we search for a local maximum
 int neighbourhood = 10;
@@ -19,58 +29,107 @@ int neighbourhood = 10;
 int minVotes = 150;
 
 void settings() {
-  size(640, 480);
+  size(2000, 400);
 }
 void setup() {
-  img = loadImage("board1.jpg");
-  //noLoop();
+  img = loadImage("board4.jpg");
+  noLoop();
   // no interactive behaviour: draw() will be called only once.
   thresholdBar1 = new HScrollbar(0, 0, 800, 20);
   thresholdBar2 = new HScrollbar(0, 20, 800, 20);
+  graph = new QuadGraph();
 
   //Assignement 9 Camera
+  /*
   String[] cameras = Capture.list();
-  if (cameras.length == 0) {
-    println("There are no cameras available for capture.");
-    exit();
-  } else {
-    println("Available cameras:");
-    for (int i = 0; i < cameras.length; i++) {
-      println(cameras[i]);
-    }
-    cam = new Capture(this, cameras[0]);
-    cam.start();
-  }
+   if (cameras.length == 0) {
+   println("There are no cameras available for capture.");
+   exit();
+   } else {
+   println("Available cameras:");
+   for (int i = 0; i < cameras.length; i++) {
+   println(cameras[i]);
+   }
+   cam = new Capture(this, cameras[0]);
+   cam.start();
+   }
+   */
 }
 void draw() {
   background(color(0, 0, 0));
-  //thresholdBar1.display();
-  //thresholdBar1.update();
-  //thresholdBar2.display();
-  //thresholdBar2.update();
-  //image(filterThreshold(img,255*thresholdBar.getPos()), 0, 20);
-  //image(displayHue(img,thresholdBar1.getPos()*255,thresholdBar2.getPos()*255),0,40);
-  //image(convolute(img), 0, 0);
-  //image(img, 0, 0);  
-  //hough(sobel(img));
-  //image(hough(sobel(img)),0,0);
-
   //Assignement 9 Camera
+  /*
   if (cam.available() == true) {
-    cam.read();
-  }
-  //img = cam.get();
-  img = displayHue(cam.get(), 54, 111);//filterThreshold(convolute(filterThreshold(displayHue(cam.get(),100,120),100)),50);
+   cam.read();
+   }
+   */
+
+  img.resize(500, 400);
+  PImage conv = sobel(((intensityThreshold(convolute(displayHSV(img, minHUE, maxHUE, minS, maxS, minB, maxB)), 15))));
+  conv.resize(500, 400);
+
+  int acc[] = getAccumulator(conv);
   image(img, 0, 0);
-  //getIntersections(hough(filterThreshold(convolute(sobel(displayHue(img, 100, 140))),200), 10));
+  ArrayList<PVector> lines = hough(conv, acc, 8);
+
+  //graph.build(lines, img.width, img.height);
+  //List<int[]> quads = graph.findCycles();
+  getIntersections(lines);
+  //getIntersections(displayGoodQuads(graph, lines, quads));
+
+
+  image(displayAcc(conv, acc), 500, 0);
+  image(conv, 900, 0);
+}
+
+boolean goodQuad(QuadGraph g, PVector c1, PVector c2, PVector c3, PVector c4) {
+  return g.isConvex(c1, c2, c3, c4) && g.nonFlatQuad(c1, c2, c3, c4) && g.validArea(c1, c2, c3, c4, 1000000, 1000);
+}
+
+ArrayList<PVector> displayGoodQuads(QuadGraph graph, ArrayList<PVector> lines, List<int[]> quads) {
+  ArrayList<PVector> res = new ArrayList<PVector>();
+  for (int[] quad : quads) {
+    PVector l1 = lines.get(quad[0]);
+    PVector l2 = lines.get(quad[1]);
+    PVector l3 = lines.get(quad[2]);
+    PVector l4 = lines.get(quad[3]);
+    // (intersection() is a simplified version of the
+    // intersections() method you wrote last week, that simply
+    // return the coordinates of the intersection between 2 lines)
+    PVector c12 = intersection(l1, l2);
+    PVector c23 = intersection(l2, l3);
+    PVector c34 = intersection(l3, l4);
+    PVector c41 = intersection(l4, l1);
+    // Choose a random, semi-transparent colour
+    if (goodQuad(graph, c12, c23, c34, c41)) {
+      stroke(204, 102, 0);
+      line(c12.x, c12.y, c23.x, c23.y);
+      line(c34.x, c34.y, c23.x, c23.y);
+      line(c34.x, c34.y, c41.x, c41.y);
+      line(c12.x, c12.y, c41.x, c41.y);
+
+
+      res.add(l1);
+      res.add(l2);
+      res.add(l3);
+      res.add(l4);
+
+      /*
+      Random random = new Random();
+       fill(color(min(255, random.nextInt(300)), 
+       min(255, random.nextInt(300)), 
+       min(255, random.nextInt(300)), 50));
+       quad(c12.x, c12.y, c23.x, c23.y, c34.x, c34.y, c41.x, c41.y);
+       */
+    }
+  }
+  return res;
 }
 
 //Assignement 9
-ArrayList<PVector> hough(PImage edgeImg, int nLines) {
-  ArrayList<PVector> res = new ArrayList<PVector>();
-  ArrayList<Integer> bestCandidates = new ArrayList();
-  float discretizationStepsPhi = 0.06f;
-  float discretizationStepsR = 2.5f;
+int[] getAccumulator(PImage edgeImg) {
+
+
   // dimensions of the accumulator
   int phiDim = (int) (Math.PI / discretizationStepsPhi);
   int rDim = (int) (((edgeImg.width + edgeImg.height) * 2 + 1) / discretizationStepsR);
@@ -110,6 +169,33 @@ ArrayList<PVector> hough(PImage edgeImg, int nLines) {
       }
     }
   }
+  return accumulator;
+}
+
+PImage displayAcc(PImage edgeImg, int accumulator[]) {
+  int phiDim = (int) (Math.PI / discretizationStepsPhi);
+  int rDim = (int) (((edgeImg.width + edgeImg.height) * 2 + 1) / discretizationStepsR);
+
+  PImage houghImg = createImage(rDim + 2, phiDim + 2, ALPHA);
+  for (int i = 0; i < accumulator.length; i++) {
+    houghImg.pixels[i] = color(min(255, accumulator[i]));
+  }
+  // You may want to resize the accumulator to make it easier to see:
+  houghImg.resize(600, 400);
+  houghImg.updatePixels();
+  return houghImg;
+}
+
+
+ArrayList<PVector> hough(PImage edgeImg, int accumulator[], int nLines) {
+
+  ArrayList<PVector> res = new ArrayList<PVector>();
+  ArrayList<Integer> bestCandidates = new ArrayList();
+  int phiDim = (int) (Math.PI / discretizationStepsPhi);
+  int rDim = (int) (((edgeImg.width + edgeImg.height) * 2 + 1) / discretizationStepsR);
+  int halfRAxisSize = rDim >>> 1;
+  int maxRadius = (int)Math.ceil(Math.hypot(width, height));
+
   for (int i = 0; i<accumulator.length; i++) {
     if (accumulator[i]>minVotes) {
       bestCandidates.add(i);
@@ -157,6 +243,7 @@ ArrayList<PVector> hough(PImage edgeImg, int nLines) {
   for (int idx = 0; idx < Math.min(nLines, bestCandidates.size()); idx++) {
 
     float phi = (float) (Math.round(bestCandidates.get(idx)/rDim) * Math.PI / phiDim);
+
     float r = ((bestCandidates.get(idx) % rDim)-halfRAxisSize)*maxRadius/halfRAxisSize ;
     res.add(new PVector(r, phi));
 
@@ -169,6 +256,7 @@ ArrayList<PVector> hough(PImage edgeImg, int nLines) {
     int y3 = edgeImg.width;
     int x3 = (int) (-(y3 - r / sin(phi)) * (sin(phi) / cos(phi)));
     // Finally, plot the lines
+
     stroke(204, 102, 0);
     if (y0 > 0) {
       if (x1 > 0)
@@ -189,6 +277,9 @@ ArrayList<PVector> hough(PImage edgeImg, int nLines) {
   }
   return res;
 }
+
+
+
 
 ArrayList<PVector> getIntersections(ArrayList<PVector> lines) {
 
@@ -215,6 +306,18 @@ ArrayList<PVector> getIntersections(ArrayList<PVector> lines) {
   return intersections;
 }
 
+PVector intersection(PVector vec1, PVector vec2) {
+  float x, y, d, phi1, phi2, r1, r2;
+  r1 = vec1.x;
+  phi1 = vec1.y;
+  r2 = vec2.x;
+  phi2 = vec2.y;
+
+  d = cos(phi2)*sin(phi1)-cos(phi1)*sin(phi2);
+  x = (r2*sin(phi1)- r1*sin(phi2))/d;
+  y = (-r2*cos(phi1)+r1*cos(phi2))/d;
+  return new PVector(x, y);
+}
 
 PImage filterThreshold(PImage img, float threshold) {
   PImage result = createImage(width, height, RGB);
@@ -237,12 +340,25 @@ PImage filterBiggerThreshold(PImage img, float threshold) {
     // do something with the pixel img.pixels[i]
     if (brightness(img.pixels[i]) > threshold) {
       result.pixels[i] = 0;
-    }else{
-    result.pixels[i] = img.pixels[i];
+    } else {
+      result.pixels[i] = img.pixels[i];
     }
   }
   return result;
 }
+
+PImage intensityThreshold(PImage img, float threshold) {
+  PImage result = img.copy();
+  for (int i = 0; i < img.width * img.height; i++) {
+    if (brightness(img.pixels[i]) > threshold) {
+      result.pixels[i] = max;
+    } else {
+      result.pixels[i] = 0;
+    }
+  }
+  return result;
+}
+
 PImage filterThresholdInverted(PImage img, float threshold) {
   PImage result = createImage(width, height, RGB);
   // create a new, initially transparent, 'result' image
@@ -257,16 +373,8 @@ PImage filterThresholdInverted(PImage img, float threshold) {
   return result;
 }
 
-private float clamp(float x, float min, float max) {
-  if (x>max) {
-    return max;
-  } else if (x<min) {
-    return min;
-  }
-  return x;
-}
 
-PImage displayHue(PImage img, float min, float max) {
+PImage displayHue( float min, float max) {
   PImage result = createImage(width, height, RGB);
   // create a new, initially transparent, 'result' image
   for (int i = 0; i < img.width * img.height; i++) {
@@ -280,6 +388,19 @@ PImage displayHue(PImage img, float min, float max) {
   return result;
 }
 
+PImage displayHSV(PImage img, float minHUE, float maxHUE, float minS, float maxS, float minB, float maxB) {
+  PImage result = img.copy();
+  // create a new, initially transparent, 'result' image
+  for (int i = 0; i < img.width * img.height; i++) {
+    // do something with the pixel img.pixels[i]
+    if ((int)hue(img.pixels[i])> minHUE && (int)hue(img.pixels[i])< maxHUE && (int)saturation(img.pixels[i])> minS && (int)saturation(img.pixels[i])< maxS && (int)brightness(img.pixels[i])> minB && (int)brightness(img.pixels[i])< maxB  ) {
+      result.pixels[i] = img.pixels[i];
+    } else {
+      result.pixels[i] = color(0);
+    }
+  }
+  return result;
+}
 
 int getPos(PImage img, int x, int y) {
   return img.pixels[x+y*img.width];
@@ -350,8 +471,8 @@ PImage sobel(PImage img) {
        sumv += vKernel[1][2]*color(getPos(img, x, y+1));
        sumv += vKernel[1][0]*color(getPos(img, x, y-1));
        */
-      sumh = multMatrice(img, hKernel, x, y, 3);
-      sumv = multMatrice(img, vKernel, x, y, 3);
+      sumh = multMatrice(img, hKernel2, x, y, 3);
+      sumv = multMatrice(img, vKernel2, x, y, 3);
 
       float sum=sqrt(pow(sumh, 2) + pow(sumv, 2));
       if (max<sum) {
@@ -381,10 +502,10 @@ PImage sobel(PImage img) {
 PImage areaFilter(PImage img, float threshold) {
   PImage res = img;
   for (int i = 1; i< img.height*img.width -1; i++) {
-    if(img.pixels[i-1]>threshold && img.pixels[i]>threshold &&img.pixels[i+1]>threshold){
-    res.pixels[i] = max;
-    }else{
-    res.pixels[i] = 0;
+    if (img.pixels[i-1]>threshold && img.pixels[i]>threshold &&img.pixels[i+1]>threshold) {
+      res.pixels[i] = max;
+    } else {
+      res.pixels[i] = 0;
     }
   }
   return img;
