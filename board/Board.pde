@@ -32,7 +32,7 @@ void settings() {
   size(2000, 400);
 }
 void setup() {
-  img = loadImage("board4.jpg");
+  img = loadImage("board2.jpg");
   noLoop();
   // no interactive behaviour: draw() will be called only once.
   thresholdBar1 = new HScrollbar(0, 0, 800, 20);
@@ -70,7 +70,7 @@ void draw() {
 
   int acc[] = getAccumulator(conv);
   image(img, 0, 0);
-  ArrayList<PVector> lines = hough(conv, acc, 8);
+  ArrayList<PVector> lines = hough(conv, acc, 9);
 
   //graph.build(lines, img.width, img.height);
   //List<int[]> quads = graph.findCycles();
