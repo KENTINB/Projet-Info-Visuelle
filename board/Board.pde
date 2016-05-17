@@ -32,7 +32,7 @@ void settings() {
   size(2000, 400);
 }
 void setup() {
-  img = loadImage("board1.jpg");
+  img = loadImage("board3.jpg");
   noLoop();
   // no interactive behaviour: draw() will be called only once.
   thresholdBar1 = new HScrollbar(0, 0, 800, 20);
@@ -75,7 +75,7 @@ void draw() {
   List<int[]> quads = graph.findCycles();
   //getIntersections(lines);
   getIntersections(displayGoodQuads(graph, lines, quads));
-
+  
   image(displayAcc(conv, acc), 500, 0);
   image(conv, 900, 0);
 }
@@ -100,15 +100,14 @@ ArrayList<PVector> displayGoodQuads(QuadGraph graph, ArrayList<PVector> lines, L
     PVector c41 = intersection(l4, l1);
     // Choose a random, semi-transparent colour
     if (goodQuad(graph, c12, c23, c34, c41)) {
-      
-      printf("a");
-      
-      stroke(204, 102, 0);
+            
+      //stroke(204, 102, 0);
+      /*
       line(c12.x, c12.y, c23.x, c23.y);
       line(c34.x, c34.y, c23.x, c23.y);
       line(c34.x, c34.y, c41.x, c41.y);
       line(c12.x, c12.y, c41.x, c41.y);
-
+      */
       res.add(l1);
       res.add(l2);
       res.add(l3);
@@ -117,7 +116,7 @@ ArrayList<PVector> displayGoodQuads(QuadGraph graph, ArrayList<PVector> lines, L
       Random random = new Random();
        fill(color(min(255, random.nextInt(300)), 
        min(255, random.nextInt(300)), 
-       min(255, random.nextInt(300)), 50));
+       min(255, random.nextInt(300)), 150));
        quad(c12.x, c12.y, c23.x, c23.y, c34.x, c34.y, c41.x, c41.y);
       
     }
@@ -238,7 +237,6 @@ ArrayList<PVector> hough(PImage edgeImg, int accumulator[], int nLines) {
     int y3 = edgeImg.width;
     int x3 = (int) (-(y3 - r / sin(phi)) * (sin(phi) / cos(phi)));
     // Finally, plot the lines
-
     stroke(204, 102, 0);
     if (y0 > 0) {
       if (x1 > 0)
@@ -257,6 +255,7 @@ ArrayList<PVector> hough(PImage edgeImg, int accumulator[], int nLines) {
         line(x2, y2, x3, y3);
     }
   }
+ 
   return res;
 }
 
@@ -275,8 +274,8 @@ ArrayList<PVector> getIntersections(ArrayList<PVector> lines) {
       r2 = vec2.x;
       phi2 = vec2.y;
       d = cos(phi2)*sin(phi1)-cos(phi1)*sin(phi2);
-      x = (r2*sin(phi1)- r1*sin(phi2))/d;
-      y = (-r2*cos(phi1)+r1*cos(phi2))/d;
+      x = (r2*sin(phi1) - r1*sin(phi2))/d;
+      y = (-r2*cos(phi1)+ r1*cos(phi2))/d;
       // compute the intersection and add it to ’intersections’
       // draw the intersection
       fill(255, 128, 0);
