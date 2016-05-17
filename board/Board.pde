@@ -10,7 +10,7 @@ HScrollbar thresholdBar1;
 HScrollbar thresholdBar2;
 QuadGraph graph;
 int sizeKernel = 3;
-float[][] kernel = { { 1, 2/*-1*/, 1}, { 2, 4, 2 }, { 1, 2/*-1*/, 1}};
+float[][] kernel = { { 1, 2, 1}, { 2, 4, 2 }, { 1, 2, 1}};
 float weight = 16.f;
 int thresholdAcc = 150;
 float minHUE = 50;
@@ -32,7 +32,7 @@ void settings() {
   size(2000, 400);
 }
 void setup() {
-  img = loadImage("board4.jpg");
+  img = loadImage("board1.jpg");
   noLoop();
   // no interactive behaviour: draw() will be called only once.
   thresholdBar1 = new HScrollbar(0, 0, 800, 20);
@@ -68,23 +68,20 @@ void draw() {
   PImage conv = sobel(((intensityThreshold(convolute(displayHSV(img, minHUE, maxHUE, minS, maxS, minB, maxB)), 10))));
   conv.resize(500, 400);
 
-  
-  
   image(img, 0, 0);
   int acc[] = getAccumulator(conv);
   ArrayList<PVector> lines = hough(conv, acc, 4);
-  //graph.build(lines, img.width, img.height);
-  //List<int[]> quads = graph.findCycles();
-  getIntersections(lines);
-  //getIntersections(displayGoodQuads(graph, lines, quads));
-
+  graph.build(lines, img.width, img.height);
+  List<int[]> quads = graph.findCycles();
+  //getIntersections(lines);
+  getIntersections(displayGoodQuads(graph, lines, quads));
 
   image(displayAcc(conv, acc), 500, 0);
   image(conv, 900, 0);
 }
 
 boolean goodQuad(QuadGraph g, PVector c1, PVector c2, PVector c3, PVector c4) {
-  return g.isConvex(c1, c2, c3, c4) && g.nonFlatQuad(c1, c2, c3, c4) && g.validArea(c1, c2, c3, c4, 1000000, 1000);
+  return g.isConvex(c1, c2, c3, c4) && g.nonFlatQuad(c1, c2, c3, c4) && g.validArea(c1, c2, c3, c4, 1000000, 0);
 }
 
 ArrayList<PVector> displayGoodQuads(QuadGraph graph, ArrayList<PVector> lines, List<int[]> quads) {
@@ -103,25 +100,26 @@ ArrayList<PVector> displayGoodQuads(QuadGraph graph, ArrayList<PVector> lines, L
     PVector c41 = intersection(l4, l1);
     // Choose a random, semi-transparent colour
     if (goodQuad(graph, c12, c23, c34, c41)) {
+      
+      printf("a");
+      
       stroke(204, 102, 0);
       line(c12.x, c12.y, c23.x, c23.y);
       line(c34.x, c34.y, c23.x, c23.y);
       line(c34.x, c34.y, c41.x, c41.y);
       line(c12.x, c12.y, c41.x, c41.y);
 
-
       res.add(l1);
       res.add(l2);
       res.add(l3);
       res.add(l4);
-
-      /*
+      
       Random random = new Random();
        fill(color(min(255, random.nextInt(300)), 
        min(255, random.nextInt(300)), 
        min(255, random.nextInt(300)), 50));
        quad(c12.x, c12.y, c23.x, c23.y, c34.x, c34.y, c41.x, c41.y);
-       */
+      
     }
   }
   return res;
@@ -130,13 +128,12 @@ ArrayList<PVector> displayGoodQuads(QuadGraph graph, ArrayList<PVector> lines, L
 //Assignement 9
 int[] getAccumulator(PImage edgeImg) {
 
-
   // dimensions of the accumulator
   int phiDim = (int) (Math.PI / discretizationStepsPhi);
   int rDim = (int) (((edgeImg.width + edgeImg.height) * 2 + 1) / discretizationStepsR);
   // our accumulator (with a 1 pix margin around)
   int[] accumulator = new int[(phiDim + 2) * (rDim + 2)];
-  int halfRAxisSize = rDim >>> 1;
+  int DemiRAxe = rDim/2;
   int maxRadius = (int)Math.ceil(Math.hypot(width, height));
 
   // Fill the accumulator: on edge points (ie, white pixels of the edge
@@ -158,15 +155,9 @@ int[] getAccumulator(PImage edgeImg) {
         for (int theta = phiDim - 1; theta >= 0; theta--)
         {
           double r = cosTable[theta] * x + sinTable[theta] * y;
-          int rScaled = (int)Math.round(r * halfRAxisSize / maxRadius) + halfRAxisSize;
+          int rScaled = (int)Math.round(r * DemiRAxe / maxRadius) + DemiRAxe;
           accumulator[theta*rDim + rScaled] += 1 ;
         }
-
-        // ...determine here all the lines (r, phi) passing through
-        // pixel (x,y), convert (r,phi) to coordinates in the
-        // accumulator, and increment accordingly the accumulator.
-        // Be careful: r may be negative, so you may want to center onto
-        // the accumulator with something like: r += (rDim - 1) / 2
       }
     }
   }
@@ -195,9 +186,8 @@ ArrayList<PVector> hough(PImage edgeImg, int accumulator[], int nLines) {
 
   int phiDim = (int) (Math.PI / discretizationStepsPhi);
   int rDim = (int) (((edgeImg.width + edgeImg.height) * 2 + 1) / discretizationStepsR);
-  int halfRAxisSize = rDim/2 /*>>> 1*/;
+  int DemiRAxe = rDim/2 /*>>> 1*/;
   int maxRadius = (int)Math.ceil(Math.hypot(width, height));
-
 
   //////////////////////
   for (int accR = 0; accR < rDim; accR++) {
@@ -229,19 +219,14 @@ ArrayList<PVector> hough(PImage edgeImg, int accumulator[], int nLines) {
       }
     }
   }
-  ////////////////
-
-
 
   Collections.sort(bestCandidates, new HoughComparator(accumulator));
-
-
 
   for (int idx = 0; idx < Math.min(nLines, bestCandidates.size()); idx++) {
 
     float phi = (float) (Math.round(bestCandidates.get(idx)/rDim) * discretizationStepsPhi/*Math.PI / phiDim*/);
 
-    float r = ((bestCandidates.get(idx) % rDim)-halfRAxisSize)*maxRadius/halfRAxisSize ;
+    float r = ((bestCandidates.get(idx) % rDim)-DemiRAxe)*maxRadius/DemiRAxe ;
     res.add(new PVector(r, phi));
 
     int x0 = 0;
@@ -274,8 +259,6 @@ ArrayList<PVector> hough(PImage edgeImg, int accumulator[], int nLines) {
   }
   return res;
 }
-
-
 
 
 ArrayList<PVector> getIntersections(ArrayList<PVector> lines) {
@@ -421,14 +404,6 @@ PImage convolute(PImage img) {
       sum = 0;
     }
   }
-
-
-  // for each (x,y) pixel in the image:
-  //     - multiply intensities for pixels in the range
-  //       (x - N/2, y - N/2) to (x + N/2, y + N/2) by the
-  //       corresponding weights in the kernel matrix
-  //     - sum all these intensities and divide it by the weight
-  //     - set result.pixels[y * img.width + x] to this value
   return result;
 }
 
@@ -462,12 +437,6 @@ PImage sobel(PImage img) {
   for (int y = 2; y < img.height - 2; y++) {
     // Skip top and bottom edges
     for (int x = 2; x < img.width - 2; x++) {
-      // Skip left and right
-      /* sumh += hKernel[2][1]*color(getPos(img, x+1, y));
-       sumh += hKernel[0][1]*color(getPos(img, x-1, y));
-       sumv += vKernel[1][2]*color(getPos(img, x, y+1));
-       sumv += vKernel[1][0]*color(getPos(img, x, y-1));
-       */
       sumh = multMatrice(img, hKernel2, x, y, 3);
       sumv = multMatrice(img, vKernel2, x, y, 3);
 
@@ -495,6 +464,7 @@ PImage sobel(PImage img) {
   }
   return result;
 }
+
 //additional filter
 PImage areaFilter(PImage img, float threshold) {
   PImage res = img;
@@ -507,6 +477,7 @@ PImage areaFilter(PImage img, float threshold) {
   }
   return img;
 }
+
 int multMatrice(PImage img, float kernel[][], int x, int y, int kernelSize) {
   int sum = 0;
   for (int i =0; i<kernelSize; i++) {
@@ -515,4 +486,4 @@ int multMatrice(PImage img, float kernel[][], int x, int y, int kernelSize) {
     }
   }
   return sum;
-}
+}  

@@ -21,10 +21,6 @@ class QuadGraph {
     for (int i = 0; i < lines.size(); i++) {
       for (int j = i + 1; j < lines.size(); j++) {
         if (intersect(lines.get(i), lines.get(j), width, height)) {
-
-          // TODO
-          // fill the graph using intersect() to check if two lines are
-          // connected in the graph.
           graph[idx][0] = i;
           graph[idx][1] = j;
           idx++;
@@ -111,7 +107,6 @@ class QuadGraph {
         ret = false;
       }
     }
-
     return ret;
   }
 
