@@ -177,7 +177,7 @@ class TwoDThreeD {
 }
 
 
-  public static List<PVector> sortCorners(List<PVector> quad) {
+  public List<PVector> sortCorners(List<PVector> quad) {
     // Sort corners so that they are ordered clockwise
     PVector a = quad.get(0);
     PVector b = quad.get(2);
