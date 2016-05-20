@@ -32,7 +32,7 @@ void settings() {
   size(2000, 400);
 }
 void setup() {
-  img = loadImage("board3.jpg");
+  img = loadImage("board1.jpg");
   noLoop();
   // no interactive behaviour: draw() will be called only once.
   thresholdBar1 = new HScrollbar(0, 0, 800, 20);
