@@ -21,6 +21,7 @@ float minB = 30;
 float maxB = 216;
 float discretizationStepsPhi = 0.06f;
 float discretizationStepsR = 2.5f;
+TwoDThreeD t = new TwoDThreeD(500,400);
 
 // size of the region we search for a local maximum
 int neighbourhood = 10;
@@ -74,10 +75,16 @@ void draw() {
   graph.build(lines, img.width, img.height);
   List<int[]> quads = graph.findCycles();
   //getIntersections(lines);
-  getIntersections(displayGoodQuads(graph, lines, quads));
+ println(t.get3DRotations(sortCorners(getIntersections(displayGoodQuads(graph, lines, quads),500,400))).mult(180/PI));
+  
+  
+  
   
   image(displayAcc(conv, acc), 500, 0);
   image(conv, 900, 0);
+  
+  
+  
 }
 
 boolean goodQuad(QuadGraph g, PVector c1, PVector c2, PVector c3, PVector c4) {
@@ -260,7 +267,7 @@ ArrayList<PVector> hough(PImage edgeImg, int accumulator[], int nLines) {
 }
 
 
-ArrayList<PVector> getIntersections(ArrayList<PVector> lines) {
+ArrayList<PVector> getIntersections(ArrayList<PVector> lines, float w, float h) {
 
   ArrayList<PVector> intersections = new ArrayList<PVector>();
   PVector vec1, vec2;
@@ -280,6 +287,7 @@ ArrayList<PVector> getIntersections(ArrayList<PVector> lines) {
       // draw the intersection
       fill(255, 128, 0);
       ellipse(x, y, 10, 10);
+      if(x>0 && y>0 && x< w && y < h) intersections.add(new PVector(x,y));
     }
   }
   return intersections;

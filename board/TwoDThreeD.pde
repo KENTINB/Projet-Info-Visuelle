@@ -19,9 +19,9 @@ class TwoDThreeD {
 
   // the 3D coordinates of the physical board corners, clockwise
   float [][] physicalCorners = {
-    { 128, 128, 0, 1}, 
+    { -128, -128, 0, 1}, 
     { 128, -128, 0, 1}, 
-    {-128, -128, 0, 1}, 
+    {128, 128, 0, 1}, 
     {-128, 128, 0, 1}
     // TODO:
     // Store here the 3D coordinates of the corners of
@@ -86,7 +86,8 @@ class TwoDThreeD {
       // store in projectedCorners the result of (K^(-1) · p), for each 
       // corner p found in the webcam image.
       // You can use Mat.multiply to multiply a matrix with a vector.
-      projectedCorners[i] = Mat.multiply(invK, physicalCorners[i]);
+        points2D.get(i).set(points2D.get(i).x, points2D.get(i).y, 1);
+        projectedCorners[i] = Mat.multiply(invK, points2D.get(i).array());
     }
 
     // 'A' contains the cross-product (K^(-1) · p) X P

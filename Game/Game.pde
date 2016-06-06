@@ -108,6 +108,7 @@ public void setup() {
   }
   topnBottom.endShape(TRIANGLES);
 }
+
 //assignement 6
 void drawMySurface() {
   mySurface.beginDraw();
