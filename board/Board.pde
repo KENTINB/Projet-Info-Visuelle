@@ -13,18 +13,18 @@ int sizeKernel = 3;
 float[][] kernel = { { 1, 2, 1}, { 2, 4, 2 }, { 1, 2, 1}};
 float weight = 16.f;
 int thresholdAcc = 150;
-float minHUE = 50;
+float minHUE = 70;
 float maxHUE = 135;
 float minS = 75;
 float maxS = 255;
-float minB = 30;
+float minB = 50;
 float maxB = 216;
 float discretizationStepsPhi = 0.06f;
 float discretizationStepsR = 2.5f;
 TwoDThreeD t = new TwoDThreeD(500,400);
 
 // size of the region we search for a local maximum
-int neighbourhood = 10;
+int neighbourhood = 12;
 // only search around lines with more that this amount of votes
 // (to be adapted to your image)
 int minVotes = 150;
@@ -33,7 +33,7 @@ void settings() {
   size(2000, 400);
 }
 void setup() {
-  img = loadImage("board1.jpg");
+  img = loadImage("test3.png");
   noLoop();
   // no interactive behaviour: draw() will be called only once.
   thresholdBar1 = new HScrollbar(0, 0, 800, 20);
@@ -66,7 +66,7 @@ void draw() {
    */
 
   img.resize(500, 400);
-  PImage conv = sobel(((intensityThreshold(convolute(displayHSV(img, minHUE, maxHUE, minS, maxS, minB, maxB)), 10))));
+  PImage conv = sobel(((intensityThreshold(convolute(displayHSV(img, minHUE, maxHUE, minS, maxS, minB, maxB)), 35))));
   conv.resize(500, 400);
 
   image(img, 0, 0);
@@ -74,8 +74,8 @@ void draw() {
   ArrayList<PVector> lines = hough(conv, acc, 4);
   graph.build(lines, img.width, img.height);
   List<int[]> quads = graph.findCycles();
-  //getIntersections(lines);
- println(t.get3DRotations(sortCorners(getIntersections(displayGoodQuads(graph, lines, quads),500,400))).mult(180/PI));
+  getIntersections(lines,500,400);
+   getIntersections(displayGoodQuads(graph, lines, quads),500,400);
   
   
   

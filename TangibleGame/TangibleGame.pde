@@ -1,6 +1,9 @@
 import java.util.concurrent.LinkedBlockingQueue; //<>//
-PVector rot;
 
+// Change to the name of your absolute path name of the testvideo.mp4
+String AbsolutePathName = "C:/Users/Quentin/Documents/GitHub/Projet-Info-Visuelle/TangibleGame/data/testvideo.mp4";
+
+PVector rot;
 
 //added elasticCoeff on square sides
 float elasticCoeff = 0.85;
@@ -67,10 +70,9 @@ public void settings() {
 public void setup() {
   
 
-  imgproc = new ImageProcessing();
+  imgproc = new ImageProcessing(AbsolutePathName);
   String []args = {"Image processing window"};
   PApplet.runSketch(args, imgproc);
-
 
   
   scoreGraph = createGraphics(graphWidth, graphHeight, P2D);

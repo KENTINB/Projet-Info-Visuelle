@@ -9,6 +9,12 @@ public void movieEvent(Movie m) {
 
 class ImageProcessing extends PApplet {
 
+  private String name;
+   
+   ImageProcessing(String name){
+    this.name = name;     
+   }
+  
   Movie cam2;
   PVector rotation;
   
@@ -30,23 +36,22 @@ class ImageProcessing extends PApplet {
   float maxHUE = 135;
   float minS = 75;
   float maxS = 255;
-  float minB = 50;
+  float minB = 80;
   float maxB = 216;
   float discretizationStepsPhi = 0.06f;
   float discretizationStepsR = 2.5f;
   TwoDThreeD t = new TwoDThreeD(600, 400);
 
   // size of the region we search for a local maximum
-  int neighbourhood = 10;
+  int neighbourhood = 15;
   // only search around lines with more that this amount of votes
   // (to be adapted to your image)
   int minVotes = 150;
 
-
-
+   
 
   void settings() {
-    size(1300, 500);
+    size(1280, 480);
   }
   void setup() {
 
@@ -69,7 +74,7 @@ class ImageProcessing extends PApplet {
      cam = new Capture(this, cameras[0]);
      cam.start();
      }*/
-    cam2 = new Movie(this, "C:/Users/Quentin/Documents/GitHub/Projet-Info-Visuelle/TangibleGame/testvideo.mp4"); //Put the video in the same directory
+    cam2 = new Movie(this, name); //Put the video in the same directory
     cam2.loop();
   }
   void draw() {
@@ -94,31 +99,12 @@ class ImageProcessing extends PApplet {
      if(corners.size() == 4) {
      rotation =  t.get3DRotations(sortCorners(corners));
      }
-    image(conv, 600, 0);
+    image(conv, 640, 0);
 
-    /*
-    img.resize(500, 400);
-     PImage conv = sobel(((intensityThreshold(convolute(displayHSV(img, minHUE, maxHUE, minS, maxS, minB, maxB)), 10))));
-     conv.resize(500, 400);
-     
-     image(img, 0, 0);
-     int acc[] = getAccumulator(conv);
-     ArrayList<PVector> lines = hough(conv, acc, 4);
-     graph.build(lines, img.width, img.height);
-     
-     List<int[]> quads = graph.findCycles();
-     //getIntersections(lines);
-     println(t.get3DRotations(sortCorners(getIntersections(displayGoodQuads(graph, lines, quads), 500, 400))).mult(180/PI));
-     */
-
-
-
-    //image(displayAcc(conv, acc), 500, 0);
-    //image(conv, 900, 0);
   }
 
   boolean goodQuad(QuadGraph g, PVector c1, PVector c2, PVector c3, PVector c4) {
-    return g.isConvex(c1, c2, c3, c4) && g.nonFlatQuad(c1, c2, c3, c4) && g.validArea(c1, c2, c3, c4, 1000000, 0);
+    return g.isConvex(c1, c2, c3, c4) && g.nonFlatQuad(c1, c2, c3, c4) && g.validArea(c1, c2, c3, c4, 85000, 25000);
   }
 
   ArrayList<PVector> displayGoodQuads(QuadGraph graph, ArrayList<PVector> lines, List<int[]> quads) {
